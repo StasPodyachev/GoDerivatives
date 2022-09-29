@@ -1,12 +1,11 @@
 pragma solidity =0.8.9;
 
 import './interfaces/IFactory.sol';
-import './DerivativeDeployer.sol';
+import './DerivativeCFDDeployer.sol';
 
-contract Factory is IFactory, DerivativeDeployer {
+contract Factory is IFactory, DerivativeCFDDeployer {
 
   address[] public allDerivatives;
-
 
  function allDerivativesLength() external view returns (uint) {
     return allDerivatives.length;
@@ -18,6 +17,6 @@ function createDerivative() external returns (address derivative) {
 
   allDerivatives.push(derivative);
 
-  emit DerivativeCreated(allDerivativesLength.length);
+  emit DerivativeCFDCreated(allDerivatives.length);
 }
 }

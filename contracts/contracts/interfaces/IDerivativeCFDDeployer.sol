@@ -1,6 +1,6 @@
 pragma solidity =0.8.9;
 
-interface IDerivativeDeployer
+interface IDerivativeCFDDeployer
 {
  function parameters()
         external
