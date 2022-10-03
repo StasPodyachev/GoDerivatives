@@ -1,22 +1,20 @@
 pragma solidity =0.8.9;
 
-import './interfaces/IFactory.sol';
-import './DerivativeCFDDeployer.sol';
+import "./interfaces/IFactory.sol";
+import "./MarketDeployer.sol";
 
-contract Factory is IFactory, DerivativeCFDDeployer {
+contract Factory is IFactory, MarketDeployer {
+    address[] public allMarkets;
 
-  address[] public allDerivatives;
+    function allMarketsLength() external view returns (uint256) {
+        return allMarkets.length;
+    }
 
- function allDerivativesLength() external view returns (uint) {
-    return allDerivatives.length;
-  }
+    function createMarket() external returns (address market) {
+        market = deploy(address(this));
 
+        allMarkets.push(market);
 
-function createDerivative() external returns (address derivative) {
-  derivative = deploy(address(this));
-
-  allDerivatives.push(derivative);
-
-  emit DerivativeCFDCreated(allDerivatives.length);
-}
+        emit MarketCreated(allMarkets.length);
+    }
 }
