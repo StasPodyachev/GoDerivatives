@@ -13,11 +13,19 @@ abstract contract DerivativeCFD is IDerivativeCFD {
 
     address public coin; // address(0) - ETH, else ERC20
 
-    function newDeal(uint256 val) external {
-        // deposit
-    }
+    function newDeal(DealParams calldata params) external {
+        Settings memory settings = _derivativeSettings[derivativeSettingsID];
 
-    function newDeal() external payable {
-        // deposit
+        require(settings.period != 0, "Derivative: Wrong derivativeSettingsID");
+
+        Deal memory deal = Deal({
+            maker: msg.sender,
+            taker: address(0),
+            balanceMaker: params.maxSlippageAmount,
+            balanceTaker: 0,
+            lockMaker: params.maxSlippageAmount,
+            lockTaker: 0,
+            derivativeCoin: coin
+        });
     }
 }
