@@ -1,6 +1,13 @@
 pragma solidity =0.8.9;
 
 interface IDerivativeCFD {
+    enum DealStatus {
+        CREATED,
+        ACCEPTED,
+        COMPLETED,
+        CANCELED
+    }
+
     struct Deal {
         address maker;
         address buyer;
@@ -23,6 +30,7 @@ interface IDerivativeCFD {
         uint256 dateStop;
         uint256 oracleAmount;
         uint256 oracleRoundIDStart;
+        DealStatus status;
     }
 
     struct DealParams {
@@ -36,4 +44,5 @@ interface IDerivativeCFD {
 
     event MakeDeal(uint256 dealId);
     event TakeDeal(uint256 dealId);
+    event CancelDeal(uint256 dealId);
 }

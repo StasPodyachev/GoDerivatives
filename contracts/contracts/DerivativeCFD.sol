@@ -60,7 +60,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             dateStart: 0,
             dateStop: 0,
             oracleAmount: 0,
-            oracleRoundIDStart: 0
+            oracleRoundIDStart: 0,
+            status: DealStatus.CREATED
         });
 
         deals[++dealId] = deal;
@@ -86,7 +87,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     {
         Deal storage deal = deals[id];
 
-        require(deal.collateralAmountMaker != 0, "Derivative: Wrong dealID");
+        require(deal.collateralAmountMaker != 0, "DerivativeCFD: Wrong dealID");
+        require(
+            deal.status == DealStatus.CREATED,
+            "DerivativeCFD: Deal is not created"
+        );
 
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest();
         uint256 collatoralAmount = (deal.count * rateOracle * deal.percent) /
@@ -130,6 +135,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.lockSeller = collatoralAmount;
         deal.dateStart = block.timestamp;
         deal.dateStop = deal.dateStart + duration;
+        deal.status = DealStatus.ACCEPTED;
 
         if (deal.buyer == address(0)) {
             deal.buyer = msg.sender;
@@ -140,5 +146,37 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         }
 
         emit TakeDeal(dealId);
+    }
+
+    function cancelDeal(uint256 id) external {
+        Deal storage deal = deals[id];
+        require(
+            deal.maker == msg.sender,
+            "DerivativeCFD: Only maker can cancel the deal"
+        );
+        require(
+            deal.status == DealStatus.CREATED,
+            "DerivativeCFD: Deal already started"
+        );
+
+        coin == address(0)
+            ? deposit.refund(
+                payable(deal.maker),
+                deal.collateralAmountMaker,
+                false
+            )
+            : deposit.refund(
+                deal.maker,
+                coin,
+                deal.collateralAmountMaker,
+                false
+            );
+
+        deal.balanceBuyer = deal.lockBuyer = deal.balanceSeller = deal
+            .lockSeller = 0;
+
+        deal.status = DealStatus.CANCELED;
+
+        emit CancelDeal(dealId);
     }
 }
