@@ -16,7 +16,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IDeposit public deposit;
     IOracle public oracle;
 
-    mapping(uint256 => Deal) public deals;
+    mapping(uint256 => Deal) deals;
     mapping(address => uint256[]) buyers;
     mapping(address => uint256[]) sellers;
 

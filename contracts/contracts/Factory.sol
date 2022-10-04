@@ -23,9 +23,9 @@ contract Factory is IFactory, MarketDeployer {
     {
         params.factory = address(this);
         params.deposit = deposit;
-        //market = deploy(params);
+        market = deploy(params);
 
-        //allMarkets.push(market);
+        allMarkets.push(market);
 
         emit MarketCreated(allMarkets.length);
     }
