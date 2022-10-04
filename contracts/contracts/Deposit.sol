@@ -35,12 +35,12 @@ contract Deposit is IDeposit, Ownable {
     }
 
     function withdraw(
-        Market market,
+        address market,
         uint256 dealID,
         uint256 amount
     ) external {
-        market.withdraw(msg.sender, dealID, amount);
-        address coin = market.coin();
+        Market(market).withdraw(msg.sender, dealID, amount);
+        address coin = Market(market).coin();
 
         if (coin == address(0)) {
             balances[msg.sender] -= amount;
@@ -66,7 +66,7 @@ contract Deposit is IDeposit, Ownable {
         uint256 val,
         address recipient
     ) internal {
-        // only from market or wallet ?
+        //only from market or wallet ?
         TransferHelper.safeTransferFrom(token, recipient, address(this), val);
         tokenBalances[recipient][token] += val;
 
@@ -80,7 +80,7 @@ contract Deposit is IDeposit, Ownable {
 
     /// @dev deposit ETH to balance from market
     function deposit(address recipient) external payable onlyMarket {
-        // only from market or wallet ?
+        //only from market or wallet ?
         _deposit(recipient);
     }
 
@@ -104,9 +104,9 @@ contract Deposit is IDeposit, Ownable {
         this.withdrawAllErc20();
     }
 
-    // function withdraw(address[] calldata markets_, uint256[] calldata vals)
-    //     external
-    // {}
+    function withdraw(address[] calldata markets_, uint256[] calldata vals)
+        external
+    {}
 
     /// @dev withdraw all free ETH msg.sender
     function withdrawAllEth() external {
@@ -215,7 +215,7 @@ contract Deposit is IDeposit, Ownable {
         );
         recipient.transfer(val);
 
-        // TODO: fix
+        //TODO: fix
         // if (remove) {
         //     delete markets[recipient];
         // }

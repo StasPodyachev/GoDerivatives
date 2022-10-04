@@ -5,15 +5,15 @@ import "./interfaces/IMarketDeployer.sol";
 
 contract Market is DerivativeCFD {
     constructor() {
-        // IMarketDeployer.Parameters memory params = IMarketDeployer(msg.sender)
-        //     .parameters();
-        // factory = params.factory;
-        // deposit = IDeposit(params.deposit);
-        // coin = params.coin;
-        // underlyingAssetName = params.underlyingAssetName;
-        // duration = params.duration;
-        // oracleAddress = params.oracleAddress;
-        // oracleType = params.oracleType;
+        IMarketDeployer.Parameters memory params = IMarketDeployer(msg.sender)
+            .parameters();
+        factory = params.factory;
+        deposit = IDeposit(params.deposit);
+        coin = params.coin;
+        underlyingAssetName = params.underlyingAssetName;
+        duration = params.duration;
+        oracleAddress = params.oracleAddress;
+        oracleType = params.oracleType;
     }
 
     modifier onlyDeposit() {

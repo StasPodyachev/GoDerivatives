@@ -1,12 +1,10 @@
 pragma solidity =0.8.9;
 
-import "../Market.sol";
-
 interface IDeposit {
     function setFactory(address factory_) external;
 
     function withdraw(
-        Market market,
+        address market,
         uint256 dealID,
         uint256 amount
     ) external;
