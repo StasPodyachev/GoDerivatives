@@ -4,12 +4,26 @@ import "./DerivativeCFD.sol";
 import "./interfaces/IMarketDeployer.sol";
 
 contract Market is DerivativeCFD {
+    struct Settings {
+        uint256 marketId;
+        string underlyingAssetName;
+        address coin;
+        uint256 duration;
+    }
+
     constructor() {
-        (factory, deposit) = IMarketDeployer(msg.sender).parameters();
+        (address factory_, address deposit_) = IMarketDeployer(msg.sender)
+            .parameters();
+
+        factory = factory_;
+        deposit = IDeposit(deposit_);
     }
 
     modifier onlyDeposit() {
-        require(msg.sender == deposit, "Market: caller is not the deposit");
+        require(
+            msg.sender == address(deposit),
+            "Market: caller is not the deposit"
+        );
         _;
     }
 
@@ -21,18 +35,18 @@ contract Market is DerivativeCFD {
         Deal storage deal = deals[dealID];
         uint256 free;
 
-        if (sender == deal.maker) {
-            free = deal.balanceMaker - deal.lockMaker;
+        if (sender == deal.buyer) {
+            free = deal.balanceBuyer - deal.lockBuyer;
 
             require(free >= amount, "Market: Insufficient balance");
 
-            deal.balanceMaker = deal.lockMaker - amount;
+            deal.balanceBuyer = deal.lockBuyer - amount;
         } else {
-            free = deal.balanceTaker - deal.lockTaker;
+            free = deal.balanceSeller - deal.lockSeller;
 
             require(free >= amount, "Market: Insufficient balance");
 
-            deal.balanceTaker = deal.lockTaker - amount;
+            deal.balanceSeller = deal.lockSeller - amount;
         }
     }
 
@@ -41,22 +55,22 @@ contract Market is DerivativeCFD {
         onlyDeposit
         returns (uint256 amount)
     {
-        uint256[] memory deals_ = makers[sender];
+        uint256[] memory deals_ = buyers[sender];
 
         for (uint256 i = 0; i < deals_.length; i++) {
             Deal storage deal = deals[deals_[i]];
 
-            amount += deal.balanceMaker - deal.lockMaker;
-            deal.balanceMaker = deal.lockMaker;
+            amount += deal.balanceBuyer - deal.lockBuyer;
+            deal.balanceBuyer = deal.lockBuyer;
         }
 
-        deals_ = takers[sender];
+        deals_ = sellers[sender];
 
         for (uint256 i = 0; i < deals_.length; i++) {
             Deal storage deal = deals[deals_[i]];
 
-            amount += deal.balanceTaker - deal.lockTaker;
-            deal.balanceTaker = deal.lockTaker;
+            amount += deal.balanceSeller - deal.lockSeller;
+            deal.balanceSeller = deal.lockSeller;
         }
     }
 }

@@ -39,7 +39,7 @@ contract Deposit is IDeposit, Ownable {
         uint256 dealID,
         uint256 amount
     ) external {
-        market.withdraw(sender, dealID, amount);
+        market.withdraw(msg.sender, dealID, amount);
         address coin = market.coin();
 
         if (coin == address(0)) {
@@ -55,7 +55,7 @@ contract Deposit is IDeposit, Ownable {
         }
     }
 
-    function _deposit(address recipient) internal payable {
+    function _deposit(address recipient) internal {
         // only from market or wallet ?
         balances[recipient] += msg.value;
         emit Deposit(recipient, msg.value);
@@ -74,7 +74,7 @@ contract Deposit is IDeposit, Ownable {
     }
 
     /// @dev deposit ETH to balance
-    function deposit() payable {
+    function deposit() external payable {
         _deposit(msg.sender);
     }
 
@@ -100,8 +100,8 @@ contract Deposit is IDeposit, Ownable {
     }
 
     function withdrawAll() external {
-        withdrawAllEth();
-        withdrawAllErc20();
+        this.withdrawAllEth();
+        this.withdrawAllErc20();
     }
 
     // function withdraw(address[] calldata markets_, uint256[] calldata vals)
@@ -112,7 +112,7 @@ contract Deposit is IDeposit, Ownable {
     function withdrawAllEth() external {
         uint256 wad = 0;
 
-        Market[] marketsArr = markets[msg.sender][address(0)];
+        Market[] storage marketsArr = markets[msg.sender][address(0)];
 
         for (uint256 i = 0; i < marketsArr.length; i++) {
             wad += marketsArr[i].withdrawFree(msg.sender);
@@ -130,7 +130,7 @@ contract Deposit is IDeposit, Ownable {
 
     /// @dev withdraw target ERC20 to msg.sender
     function withdrawAllErc20(address token) external {
-        Market[] marketsArr = markets[msg.sender][token];
+        Market[] storage marketsArr = markets[msg.sender][token];
         uint256 wad;
 
         for (uint256 i = 0; i < marketsArr.length; i++) {
@@ -148,11 +148,12 @@ contract Deposit is IDeposit, Ownable {
     }
 
     /// @dev withdraw all free ERC20 to msg.sender
+    // TODO: fix mapping
     function withdrawAllErc20() external {
-        Market[] marketsArr = marketsByUser[msg.sender];
+        Market[] memory marketsArr = marketsByUser[msg.sender];
 
-        address[] tokens;
-        mapping(address => uint256) wads;
+        address[] memory tokens;
+        //mapping(address => uint256) memory wads;
 
         for (uint256 i = 0; i < marketsArr.length; i++) {
             uint256 amount = marketsArr[i].withdrawFree(msg.sender);
@@ -160,17 +161,17 @@ contract Deposit is IDeposit, Ownable {
 
             if (token == address(0)) continue;
 
-            if (wads[token] == 0) {
-                tokens.push(token);
-            }
+            // if (wads[token] == 0) {
+            //     tokens.push(token);
+            // }
 
-            wads[token] += amounts[i];
+            // wads[token] += amount;
         }
 
         uint256 wad;
 
         for (uint256 i = 0; i < tokens.length; i++) {
-            wad = wads[tokens[i]];
+            wad = 0; //wads[tokens[i]];
             require(
                 tokenBalances[msg.sender][tokens[i]] >= wad,
                 "Deposit: Insufficient balance to withdraw"
@@ -191,14 +192,15 @@ contract Deposit is IDeposit, Ownable {
     ) external onlyMarket {
         // only market
         require(
-            balances[recipient] >= wad,
+            balances[recipient] >= val,
             "Deposit: Insufficient balance token to refund"
         );
         TransferHelper.safeTransfer(token, recipient, val);
 
-        if (remove) {
-            delete markets[recipient];
-        }
+        // TODO: fix
+        // if (remove) {
+        //     delete markets[recipient];
+        // }
     }
 
     function refund(
@@ -208,14 +210,15 @@ contract Deposit is IDeposit, Ownable {
     ) external onlyMarket {
         // only market
         require(
-            balances[recipient] >= wad,
+            balances[recipient] >= val,
             "Deposit: Insufficient balance ETH to refund"
         );
         recipient.transfer(val);
 
-        if (remove) {
-            delete markets[recipient];
-        }
+        // TODO: fix
+        // if (remove) {
+        //     delete markets[recipient];
+        // }
     }
 
     function _remove(Market[] storage array, uint256 index) internal {

@@ -11,12 +11,6 @@ import "solidity-coverage";
 import * as dotenv from "dotenv";
 
 import "./tasks/deploy";
-import "./tasks/deployAll";
-
-import "./tasks/configure";
-import "./tasks/configureAll";
-
-import "./tasks/dev";
 
 import "@nomiclabs/hardhat-etherscan";
 
@@ -25,7 +19,6 @@ dotenv.config();
 const config = {
   networks: {
     hardhat: {
-      accounts: [process.env.DEPLOY_PRIVATE_KEY],
       allowUnlimitedContractSize: true,
       chainId: 2,
       mining: {
@@ -39,7 +32,7 @@ const config = {
       accounts: [process.env.DEPLOY_PRIVATE_KEY],
     },
     "klay-cn": {
-      url: process.env.KLAY_RPC_URL
+      url: process.env.KLAY_RPC_URL,
       chainId: 1002,
       accounts: [
         process.env.KLAY_PRIVATE_KEY

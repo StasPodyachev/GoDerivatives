@@ -1,9 +1,7 @@
 pragma solidity =0.8.9;
 
-interface IFactory{
+interface IFactory {
+    event MarketCreated(uint256 id);
 
-  event MarketCreated(uint id);
-
-  function isMarket(address) external returns(bool)
-
+    function isMarket(address) external returns (bool);
 }
