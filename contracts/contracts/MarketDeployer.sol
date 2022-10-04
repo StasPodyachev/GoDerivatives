@@ -4,19 +4,18 @@ import "./interfaces/IMarketDeployer.sol";
 import "./Market.sol";
 
 contract MarketDeployer is IMarketDeployer {
-    struct Parameters {
-        address factory;
-        address deposit;
-    }
+    Parameters public parameters_;
 
-    Parameters public override parameters;
+    // function deploy(Parameters memory params)
+    //     internal
+    //     returns (address derivative)
+    // {
+    //     parameters_ = params;
+    //     derivative = address(new Market());
+    //     delete parameters_;
+    // }
 
-    function deploy(address factory, address deposit)
-        internal
-        returns (address derivative)
-    {
-        parameters = Parameters({factory: factory, deposit: deposit});
-        derivative = address(new Market());
-        delete parameters;
+    function parameters() external view returns (Parameters memory params) {
+        return parameters_;
     }
 }

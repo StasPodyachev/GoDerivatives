@@ -23,18 +23,15 @@ interface IDerivativeCFD {
         uint256 dateStop;
         uint256 oracleAmount;
         uint256 oracleRoundIDStart;
-        uint256 duration;
     }
 
     struct DealParams {
         bool makerPosition;
-        uint256 price; //CFD_Hackathon: Основной параметр и определяется как текущая Цена на Undelying Asset в момент Take
+        uint256 rate; //CFD_Hackathon: Основной параметр и определяется как текущая Цена на Undelying Asset в момент Take
         uint256 count; //CFD_Hackathon: Количество контрактов 10^18 = 1
         uint256 percent; // 100% = 1e18 //
         uint256 expiration;
         uint256 slippage;
-        uint256 maxSlippageAmount;
-        uint256 duration;
     }
 
     event MakeDeal(uint256 dealId);

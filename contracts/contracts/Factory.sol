@@ -1,6 +1,8 @@
 pragma solidity =0.8.9;
 
 import "./interfaces/IFactory.sol";
+import "./interfaces/IMarketDeployer.sol";
+
 import "./MarketDeployer.sol";
 
 contract Factory is IFactory, MarketDeployer {
@@ -15,10 +17,15 @@ contract Factory is IFactory, MarketDeployer {
         deposit = deposit_;
     }
 
-    function createMarket() external returns (address market) {
-        market = deploy(address(this), deposit);
+    function createMarket(Parameters memory params)
+        external
+        returns (address market)
+    {
+        params.factory = address(this);
+        params.deposit = deposit;
+        //market = deploy(params);
 
-        allMarkets.push(market);
+        //allMarkets.push(market);
 
         emit MarketCreated(allMarkets.length);
     }

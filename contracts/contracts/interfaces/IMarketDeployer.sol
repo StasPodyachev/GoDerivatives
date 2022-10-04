@@ -1,8 +1,17 @@
 pragma solidity =0.8.9;
 
+import "./IOracle.sol";
+
 interface IMarketDeployer {
-    function parameters()
-        external
-        view
-        returns (address factory, address deposit);
+    struct Parameters {
+        address factory;
+        address deposit;
+        string underlyingAssetName;
+        address coin;
+        uint256 duration;
+        address oracleAddress;
+        IOracle.Type oracleType;
+    }
+
+    function parameters() external view returns (Parameters memory params);
 }

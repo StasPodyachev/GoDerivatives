@@ -8,35 +8,36 @@ import "./interfaces/IOracle.sol";
 
 abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     address public factory;
-    IDeposit deposit;
-    IOracle oracle;
+    string public underlyingAssetName;
+    address public coin;
+    uint256 public duration;
+    address public oracleAddress;
+    IOracle.Type public oracleType;
+    IDeposit public deposit;
+    IOracle public oracle;
 
     mapping(uint256 => Deal) public deals;
-    //mapping(address => mapping(uint256 => bool)) clients;
     mapping(address => uint256[]) buyers;
     mapping(address => uint256[]) sellers;
 
-    address public coin; // address(0) - ETH, else ERC20
     uint256 internal dealId;
+
+    constructor() {}
 
     function setOracle(IOracle oracle_) external onlyOwner {
         oracle = oracle_;
     }
 
-    function newDeal(DealParams calldata params) external payable {
-        (uint256 priceOracle, ) = oracle.getLatest();
-
-        uint256 oracleAmount = (params.count * priceOracle * params.percent) /
-            1e26;
-
-        require(
-            params.maxSlippageAmount >= oracleAmount,
-            "DerivativeCFD: Not enough deposit"
-        );
+    function createDeal(DealParams calldata params) external payable {
+        uint256 collateralAmountMaker = (params.count *
+            params.rate *
+            params.percent) /
+            1e36 +
+            params.slippage; // slippage in percent or amount?
 
         msg.value > 0
             ? deposit.deposit(msg.sender)
-            : deposit.deposit(coin, params.maxSlippageAmount, msg.sender);
+            : deposit.deposit(coin, collateralAmountMaker, msg.sender);
 
         Deal memory deal = Deal({
             maker: msg.sender,
@@ -51,7 +52,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             percent: params.percent,
             periodOrderExpiration: params.expiration,
             slippage: params.slippage,
-            collateralAmountMaker: params.maxSlippageAmount,
+            collateralAmountMaker: collateralAmountMaker,
             collateralAmountBuyer: 0,
             collateralAmountSeller: 0,
             dateOrderCreation: block.timestamp,
@@ -59,20 +60,19 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             dateStart: 0,
             dateStop: 0,
             oracleAmount: 0,
-            oracleRoundIDStart: 0,
-            duration: params.duration
+            oracleRoundIDStart: 0
         });
 
         deals[++dealId] = deal;
 
         if (params.makerPosition) {
             deal.buyer = msg.sender;
-            deal.balanceBuyer = deal.lockBuyer = params.maxSlippageAmount;
+            deal.balanceBuyer = deal.lockBuyer = collateralAmountMaker;
 
             buyers[msg.sender].push(dealId);
         } else {
             deal.seller = msg.sender;
-            deal.balanceSeller = deal.lockSeller = params.maxSlippageAmount;
+            deal.balanceSeller = deal.lockSeller = collateralAmountMaker;
 
             sellers[msg.sender].push(dealId);
         }
@@ -80,22 +80,26 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit MakeDeal(dealId);
     }
 
-    function takeDeal(uint256 id, uint256 maxslippageAmount) external payable {
+    function takeDeal(uint256 id, uint256 collatoralAmountTaker)
+        external
+        payable
+    {
         Deal storage deal = deals[id];
 
         require(deal.collateralAmountMaker != 0, "Derivative: Wrong dealID");
 
-        (uint256 priceOracle, uint256 roundId) = oracle.getLatest();
-        uint256 newAmount = (deal.count * priceOracle * deal.percent) / 1e26;
+        (uint256 rateOracle, uint256 roundId) = oracle.getLatest();
+        uint256 collatoralAmount = (deal.count * rateOracle * deal.percent) /
+            1e26;
 
         require(
-            newAmount <= maxslippageAmount,
+            collatoralAmount <= collatoralAmountTaker,
             "DerivativeCFD: Insufficient amount of deposit for the deal"
         );
 
         require(
-            newAmount > deal.collateralAmountMaker - 2 * deal.slippage &&
-                deal.collateralAmountMaker >= newAmount,
+            collatoralAmount > deal.collateralAmountMaker - 2 * deal.slippage &&
+                deal.collateralAmountMaker >= collatoralAmount,
             "DerivativeCFD: Deposit Out of range"
         );
 
@@ -103,29 +107,29 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deposit.deposit(msg.sender);
             deposit.refund(
                 payable(deal.maker),
-                deal.collateralAmountMaker - newAmount,
+                deal.collateralAmountMaker - collatoralAmount,
                 false
             );
         } else {
-            deposit.deposit(coin, newAmount, msg.sender);
+            deposit.deposit(coin, collatoralAmount, msg.sender);
             deposit.refund(
                 deal.maker,
                 coin,
-                deal.collateralAmountMaker - newAmount,
+                deal.collateralAmountMaker - collatoralAmount,
                 false
             );
         }
 
         deal.oracleRoundIDStart = roundId;
-        deal.collateralAmountBuyer = newAmount;
-        deal.collateralAmountSeller = newAmount;
-        deal.rate = priceOracle;
-        deal.balanceBuyer = newAmount;
-        deal.balanceSeller = newAmount;
-        deal.lockBuyer = newAmount;
-        deal.lockSeller = newAmount;
+        deal.collateralAmountBuyer = collatoralAmount;
+        deal.collateralAmountSeller = collatoralAmount;
+        deal.rate = rateOracle;
+        deal.balanceBuyer = collatoralAmount;
+        deal.balanceSeller = collatoralAmount;
+        deal.lockBuyer = collatoralAmount;
+        deal.lockSeller = collatoralAmount;
         deal.dateStart = block.timestamp;
-        deal.dateStop = deal.dateStart + deal.duration;
+        deal.dateStop = deal.dateStart + duration;
 
         if (deal.buyer == address(0)) {
             deal.buyer = msg.sender;
@@ -138,10 +142,3 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit TakeDeal(dealId);
     }
 }
-
-// 22/100 = 0.22
-
-// 1e17 = 0.5
-
-// 0.5 * 1500 * 0.1
-// 5e17/1e18 * 1500 * 1e18 * 1e17/1e18

@@ -2,6 +2,10 @@
 pragma solidity =0.8.9;
 
 interface IOracle {
+    enum Type {
+        Chainlink
+    }
+
     function getAmount(uint256 timestamp, uint256 roundId)
         external
         view
