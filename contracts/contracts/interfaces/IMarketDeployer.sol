@@ -10,6 +10,7 @@ interface IMarketDeployer {
         address coin;
         uint256 duration;
         address oracleAddress;
+        address storageAddress;
         IOracle.Type oracleType;
     }
 

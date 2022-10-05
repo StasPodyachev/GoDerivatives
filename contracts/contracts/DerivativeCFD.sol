@@ -17,10 +17,9 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IOracle.Type public oracleType;
     IDeposit public deposit;
     IOracle public oracle;
+    IStorage public storage_;
 
     mapping(uint256 => Deal) deals;
-    mapping(address => uint256[]) buyers;
-    mapping(address => uint256[]) sellers;
 
     constructor() {}
 
@@ -43,10 +42,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             maker: msg.sender,
             buyer: address(0),
             seller: address(0),
-            balanceBuyer: 0,
-            balanceSeller: 0,
-            lockBuyer: 0,
-            lockSeller: 0,
             rate: 0,
             count: params.count,
             percent: params.percent,
@@ -64,24 +59,14 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             status: DealStatus.CREATED
         });
 
-        address storageAddress = Factory(factory).storageAddress(); // ?
-        uint256 dealId = Storage(storageAddress).addDeal(address(this));
+        uint256 dealId = storage_.addDealId();
 
         deals[dealId] = deal;
 
-        if (params.makerPosition) {
-            deal.buyer = msg.sender;
-            deal.balanceBuyer = deal.lockBuyer = collateralAmountMaker;
+        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
 
-            buyers[msg.sender].push(dealId);
-        } else {
-            deal.seller = msg.sender;
-            deal.balanceSeller = deal.lockSeller = collateralAmountMaker;
-
-            sellers[msg.sender].push(dealId);
-        }
-
-        emit MakeDeal(dealId);
+        emit DealCreated(dealId);
     }
 
     function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
@@ -115,16 +100,14 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deposit.deposit(msg.sender);
             deposit.refund(
                 payable(deal.maker),
-                deal.collateralAmountMaker - collatoralAmount,
-                false
+                deal.collateralAmountMaker - collatoralAmount
             );
         } else {
             deposit.deposit(coin, collatoralAmount, msg.sender);
             deposit.refund(
                 deal.maker,
                 coin,
-                deal.collateralAmountMaker - collatoralAmount,
-                false
+                deal.collateralAmountMaker - collatoralAmount
             );
         }
 
@@ -132,54 +115,107 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.collateralAmountBuyer = collatoralAmount;
         deal.collateralAmountSeller = collatoralAmount;
         deal.rate = rateOracle;
-        deal.balanceBuyer = collatoralAmount;
-        deal.balanceSeller = collatoralAmount;
-        deal.lockBuyer = collatoralAmount;
-        deal.lockSeller = collatoralAmount;
         deal.dateStart = block.timestamp;
         deal.dateStop = deal.dateStart + duration;
         deal.status = DealStatus.ACCEPTED;
 
-        if (deal.buyer == address(0)) {
-            deal.buyer = msg.sender;
-            buyers[msg.sender].push(dealId);
-        } else {
-            deal.seller = msg.sender;
-            sellers[msg.sender].push(dealId);
-        }
+        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
 
-        emit TakeDeal(dealId);
+        emit DealAccepted(dealId);
     }
 
     function cancelDeal(uint256 dealId) external {
         Deal storage deal = deals[dealId];
+        _cancel(deal, DealStatus.CANCELED);
+
+        emit DealCanceled(dealId);
+    }
+
+    function _cancel(Deal storage deal, DealStatus status) internal {
         require(
             deal.maker == msg.sender,
             "DerivativeCFD: Only maker can cancel the deal"
         );
+
         require(
             deal.status == DealStatus.CREATED,
-            "DerivativeCFD: Deal already started"
+            "DerivativeCFD: Deal status is not created"
         );
 
         coin == address(0)
-            ? deposit.refund(
-                payable(deal.maker),
-                deal.collateralAmountMaker,
-                false
-            )
-            : deposit.refund(
-                deal.maker,
-                coin,
-                deal.collateralAmountMaker,
-                false
-            );
+            ? deposit.refund(payable(deal.maker), deal.collateralAmountMaker)
+            : deposit.refund(deal.maker, coin, deal.collateralAmountMaker);
 
-        deal.balanceBuyer = deal.lockBuyer = deal.balanceSeller = deal
-            .lockSeller = 0;
+        deal.status = status;
+    }
 
-        deal.status = DealStatus.CANCELED;
+    function processing(uint256 dealId) external {
+        Deal storage deal = deals[dealId];
 
-        emit CancelDeal(dealId);
+        require(deal.collateralAmountBuyer != 0, "DerivativeCFD: Wrong dealID");
+
+        if (
+            deal.status == DealStatus.CREATED &&
+            deal.dateOrderExpiration <= block.timestamp
+        ) {
+            _cancel(deal, DealStatus.EXPIRED);
+            emit DealExpired(dealId);
+
+            return;
+        }
+
+        require(
+            deal.status == DealStatus.ACCEPTED &&
+                deal.dateStop <= block.timestamp
+        );
+
+        uint256 oracleAmount = oracle.getAmount(
+            deal.dateStop,
+            deal.oracleRoundIDStart
+        ) * 1e10;
+
+        require(
+            oracleAmount > 0,
+            "DerivativeCFD: Oracle cannot provide the value"
+        );
+
+        uint256 payoutBuyer = 0;
+        uint256 payoutSeller = 0;
+
+        if (oracleAmount <= deal.rate - deal.collateralAmountBuyer) {
+            payoutSeller =
+                deal.collateralAmountSeller +
+                deal.collateralAmountBuyer;
+        } else if (
+            (oracleAmount > deal.rate - deal.collateralAmountBuyer) &&
+            (oracleAmount < deal.rate + deal.collateralAmountSeller)
+        ) {
+            payoutBuyer = oracleAmount + deal.collateralAmountBuyer - deal.rate;
+            payoutSeller =
+                deal.rate +
+                deal.collateralAmountSeller -
+                oracleAmount;
+        } else if (oracleAmount >= deal.rate + deal.collateralAmountSeller) {
+            payoutBuyer =
+                deal.collateralAmountSeller +
+                deal.collateralAmountBuyer;
+        }
+
+        if (payoutBuyer > 0) {
+            coin == address(0)
+                ? deposit.refund(payable(deal.buyer), payoutBuyer)
+                : deposit.refund(deal.buyer, coin, payoutBuyer);
+        }
+
+        if (payoutSeller > 0) {
+            coin == address(0)
+                ? deposit.refund(payable(deal.seller), payoutSeller)
+                : deposit.refund(deal.seller, coin, payoutSeller);
+        }
+
+        deal.status = DealStatus.COMPLETED;
+
+        emit DealCompleted(dealId);
     }
 }
