@@ -18,7 +18,7 @@ contract Factory is IFactory, MarketDeployer, Ownable {
         storageAddress = storageAddress_;
     }
 
-    function setDeposit(address depositAddress_) external {
+    function setDeposit(address depositAddress_) external onlyOwner {
         depositAddress = depositAddress_;
     }
 

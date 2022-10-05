@@ -27,54 +27,7 @@ contract Market is DerivativeCFD {
         _;
     }
 
-    function getDeal(uint256 dealId) external returns (Deal memory) {
+    function getDeal(uint256 dealId) external view returns (Deal memory) {
         return deals[dealId];
-    }
-
-    function withdraw(
-        address sender,
-        uint256 dealID,
-        uint256 amount
-    ) external onlyDeposit {
-        Deal storage deal = deals[dealID];
-        uint256 free;
-
-        if (sender == deal.buyer) {
-            free = deal.balanceBuyer - deal.lockBuyer;
-
-            require(free >= amount, "Market: Insufficient balance");
-
-            deal.balanceBuyer = deal.lockBuyer - amount;
-        } else {
-            free = deal.balanceSeller - deal.lockSeller;
-
-            require(free >= amount, "Market: Insufficient balance");
-
-            deal.balanceSeller = deal.lockSeller - amount;
-        }
-    }
-
-    function withdrawFree(address sender)
-        external
-        onlyDeposit
-        returns (uint256 amount)
-    {
-        uint256[] memory deals_ = buyers[sender];
-
-        for (uint256 i = 0; i < deals_.length; i++) {
-            Deal storage deal = deals[deals_[i]];
-
-            amount += deal.balanceBuyer - deal.lockBuyer;
-            deal.balanceBuyer = deal.lockBuyer;
-        }
-
-        deals_ = sellers[sender];
-
-        for (uint256 i = 0; i < deals_.length; i++) {
-            Deal storage deal = deals[deals_[i]];
-
-            amount += deal.balanceSeller - deal.lockSeller;
-            deal.balanceSeller = deal.lockSeller;
-        }
     }
 }

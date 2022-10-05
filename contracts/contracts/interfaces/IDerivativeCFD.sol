@@ -5,17 +5,14 @@ interface IDerivativeCFD {
         CREATED,
         ACCEPTED,
         COMPLETED,
-        CANCELED
+        CANCELED,
+        EXPIRED
     }
 
     struct Deal {
         address maker;
         address buyer;
         address seller;
-        uint256 balanceBuyer;
-        uint256 balanceSeller;
-        uint256 lockBuyer; // after new deal lock == balance
-        uint256 lockSeller;
         uint256 rate;
         uint256 count; //CFD_Hackathon: Количество контрактов 10^18 = 1
         uint256 percent; // 100% = 1e18 //
@@ -42,8 +39,9 @@ interface IDerivativeCFD {
         uint256 slippage;
     }
 
-    event MakeDeal(uint256 dealId);
-    event TakeDeal(uint256 dealId);
-    event CancelDeal(uint256 dealId);
-    event CompleteDeal(uint256 dealId);
+    event DealCreated(uint256 dealId);
+    event DealAccepted(uint256 dealId);
+    event DealCanceled(uint256 dealId);
+    event DealCompleted(uint256 dealId);
+    event DealExpired(uint256 dealId);
 }
