@@ -2,11 +2,13 @@ pragma solidity =0.8.9;
 
 import "./DerivativeCFD.sol";
 import "./interfaces/IMarketDeployer.sol";
+import "./interfaces/IStorage.sol";
 
 contract Market is DerivativeCFD {
     constructor() {
         IMarketDeployer.Parameters memory params = IMarketDeployer(msg.sender)
             .parameters();
+
         factory = params.factory;
         deposit = IDeposit(params.deposit);
         coin = params.coin;
@@ -14,6 +16,7 @@ contract Market is DerivativeCFD {
         duration = params.duration;
         oracleAddress = params.oracleAddress;
         oracleType = params.oracleType;
+        storage_ = IStorage(params.storageAddress);
     }
 
     modifier onlyDeposit() {
@@ -22,6 +25,10 @@ contract Market is DerivativeCFD {
             "Market: caller is not the deposit"
         );
         _;
+    }
+
+    function getDeal(uint256 dealId) external returns (Deal memory) {
+        return deals[dealId];
     }
 
     function withdraw(

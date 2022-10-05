@@ -45,4 +45,5 @@ interface IDerivativeCFD {
     event MakeDeal(uint256 dealId);
     event TakeDeal(uint256 dealId);
     event CancelDeal(uint256 dealId);
+    event CompleteDeal(uint256 dealId);
 }

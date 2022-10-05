@@ -17,6 +17,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IOracle.Type public oracleType;
     IDeposit public deposit;
     IOracle public oracle;
+    IStorage public storage_;
 
     mapping(uint256 => Deal) deals;
     mapping(address => uint256[]) buyers;
@@ -64,8 +65,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             status: DealStatus.CREATED
         });
 
-        address storageAddress = Factory(factory).storageAddress(); // ?
-        uint256 dealId = Storage(storageAddress).addDeal(address(this));
+        uint256 dealId = storage_.addDeal(address(this));
 
         deals[dealId] = deal;
 
@@ -181,5 +181,56 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.status = DealStatus.CANCELED;
 
         emit CancelDeal(dealId);
+    }
+
+    function processing(uint256 dealId) external {
+        Deal storage deal = deals[dealId];
+
+        require(deal.collateralAmountBuyer != 0, "DerivativeCFD: Wrong dealID");
+        require(
+            deal.status == DealStatus.ACCEPTED &&
+                deal.dateStop <= block.timestamp
+        );
+
+        uint256 oracleAmount = oracle.getAmount(
+            deal.dateStop,
+            deal.oracleRoundIDStart
+        ) * 1e10;
+
+        require(
+            oracleAmount > 0,
+            "DerivativeCFD: Oracle cannot provide the value"
+        );
+
+        uint256 payoutBuyer = 0;
+        uint256 payoutSeller = 0;
+
+        if (oracleAmount <= deal.rate - deal.collateralAmountBuyer) {
+            payoutSeller =
+                deal.collateralAmountSeller +
+                deal.collateralAmountBuyer;
+        } else if (
+            (oracleAmount > deal.rate - deal.collateralAmountBuyer) &&
+            (oracleAmount < deal.rate + deal.collateralAmountSeller)
+        ) {
+            payoutBuyer = oracleAmount + deal.collateralAmountBuyer - deal.rate;
+            payoutSeller =
+                deal.rate +
+                deal.collateralAmountSeller -
+                oracleAmount;
+        } else if (oracleAmount >= deal.rate + deal.collateralAmountSeller) {
+            payoutBuyer =
+                deal.collateralAmountSeller +
+                deal.collateralAmountBuyer;
+        }
+
+        //refund
+
+        deal.balanceBuyer = deal.lockBuyer = deal.balanceSeller = deal
+            .lockSeller = 0;
+
+        deal.status = DealStatus.COMPLETED;
+
+        emit CompleteDeal(dealId);
     }
 }
