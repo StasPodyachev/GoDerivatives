@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IDerivativeCFD.sol";
 import "./interfaces/IDeposit.sol";
 import "./interfaces/IOracle.sol";
+import "./Factory.sol";
+import "./Storage.sol";
 
 abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     address public factory;
@@ -19,8 +21,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     mapping(uint256 => Deal) deals;
     mapping(address => uint256[]) buyers;
     mapping(address => uint256[]) sellers;
-
-    uint256 internal dealId;
 
     constructor() {}
 
@@ -64,7 +64,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             status: DealStatus.CREATED
         });
 
-        deals[++dealId] = deal;
+        address storageAddress = Factory(factory).storageAddress(); // ?
+        uint256 dealId = Storage(storageAddress).addDeal(address(this));
+
+        deals[dealId] = deal;
 
         if (params.makerPosition) {
             deal.buyer = msg.sender;
@@ -81,11 +84,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit MakeDeal(dealId);
     }
 
-    function takeDeal(uint256 id, uint256 collatoralAmountTaker)
+    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
         external
         payable
     {
-        Deal storage deal = deals[id];
+        Deal storage deal = deals[dealId];
 
         require(deal.collateralAmountMaker != 0, "DerivativeCFD: Wrong dealID");
         require(
@@ -148,8 +151,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit TakeDeal(dealId);
     }
 
-    function cancelDeal(uint256 id) external {
-        Deal storage deal = deals[id];
+    function cancelDeal(uint256 dealId) external {
+        Deal storage deal = deals[dealId];
         require(
             deal.maker == msg.sender,
             "DerivativeCFD: Only maker can cancel the deal"
