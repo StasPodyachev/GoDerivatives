@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IDerivativeCFD.sol";
 import "./interfaces/IDeposit.sol";
 import "./interfaces/IOracle.sol";
-import "./interfaces/IFactory.sol";
 import "./Storage.sol";
 import "./DealNFT.sol";
 
@@ -14,15 +13,15 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     string public underlyingAssetName;
     address public coin;
     uint256 public duration;
-    address public oracleAddress;
+    address public oracleAggregatorAddress;
     IOracle.Type public oracleType;
     IDeposit public deposit;
-    IOracle public oracle;
     IStorage public storage_;
     DealNFT public _nft;
     uint256 public operatorFee_; // 100% == 1e18
     uint256 public serviceFee_;
     address public operator;
+    IOracle public oracle;
 
     bool public isFreezed_;
 
@@ -35,10 +34,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         _;
     }
 
-    function setOracle(IOracle oracle_) external onlyOwner {
-        oracle = oracle_;
-    }
-
     function freezeMarket(bool freeze) external {
         isFreezed_ = freeze;
     }
@@ -48,10 +43,15 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             params.rate *
             params.percent) /
             1e36 +
-            params.slippage; // slippage in percent or amount?
+            params.slippage;
+
+        require(
+            msg.value > 0 ? collateralAmountMaker == msg.value : true,
+            "DerivativeCFD: Collateral amount does not equal msg.value"
+        );
 
         msg.value > 0
-            ? deposit.deposit(msg.sender)
+            ? deposit.deposit{value: msg.value}(msg.sender)
             : deposit.deposit(coin, collateralAmountMaker, msg.sender);
 
         Deal memory deal = Deal({
@@ -99,7 +99,9 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Deal is not created"
         );
 
-        (uint256 rateOracle, uint256 roundId) = oracle.getLatest();
+        (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
+            oracleAggregatorAddress
+        );
         uint256 collatoralAmount = (deal.count * rateOracle * deal.percent) /
             1e26;
 
@@ -115,7 +117,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         );
 
         msg.value > 0
-            ? deposit.deposit(msg.sender)
+            ? deposit.deposit{value: msg.value}(msg.sender)
             : deposit.deposit(coin, collatoralAmount, msg.sender);
 
         deposit.refund(
@@ -199,6 +201,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         );
 
         uint256 oracleAmount = oracle.getAmount(
+            oracleAggregatorAddress,
             deal.dateStop,
             deal.oracleRoundIDStart
         ) * 1e10;

@@ -1,6 +1,6 @@
 pragma solidity =0.8.9;
 
-import "./IMarketDeployer.sol";
+import "./IOracle.sol";
 
 interface IKeeper {
     function setFactory(address factoryAddress) external;
@@ -9,7 +9,15 @@ interface IKeeper {
 
     function removeOperator() external;
 
-    function setMarket(IMarketDeployer.Parameters memory parameters) external;
+    function setMarket(
+        string memory underlyingAssetName,
+        address coin,
+        uint256 duration,
+        address oracleAggregatorAddress,
+        IOracle.Type oracleType,
+        uint256 operatorFee,
+        uint256 serviceFee
+    ) external;
 
     function freezeMarket(address marketAddress, bool freeze) external;
 
@@ -18,6 +26,4 @@ interface IKeeper {
     function freezeAMM(address ammAddress) external;
 
     function deleteAMM(address ammAddress) external;
-
-    function setOracle(address operator) external;
 }

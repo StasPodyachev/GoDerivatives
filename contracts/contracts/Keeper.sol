@@ -11,6 +11,7 @@ import "./Market.sol";
 contract Keeper is IKeeper, Ownable {
     mapping(address => bool) markets;
     address operator;
+    address storageAddress;
 
     IFactory factory;
     IDeposit deposit;
@@ -23,6 +24,7 @@ contract Keeper is IKeeper, Ownable {
     function setFactory(address factoryAddress) external onlyOwner {
         factory = IFactory(factoryAddress);
         deposit = IDeposit(factory.depositAddress());
+        storageAddress = factory.storageAddress();
     }
 
     function setOperator(address operatorAddress) external onlyOwner {
@@ -37,11 +39,29 @@ contract Keeper is IKeeper, Ownable {
         deposit.withdrawOperatorFee(operator, coin);
     }
 
-    function setMarket(IMarketDeployer.Parameters memory parameters)
-        external
-        onlyOperator
-    {
-        parameters.operator = operator;
+    function setMarket(
+        string memory underlyingAssetName,
+        address coin,
+        uint256 duration,
+        address oracleAggregatorAddress,
+        IOracle.Type oracleType,
+        uint256 operatorFee,
+        uint256 serviceFee
+    ) external onlyOperator {
+        IMarketDeployer.Parameters memory parameters = IMarketDeployer
+            .Parameters({
+                factory: address(factory),
+                deposit: address(deposit),
+                operator: operator,
+                underlyingAssetName: underlyingAssetName,
+                coin: coin,
+                duration: duration,
+                oracleAggregatorAddress: oracleAggregatorAddress,
+                storageAddress: storageAddress,
+                oracleType: oracleType,
+                operatorFee: operatorFee,
+                serviceFee: serviceFee
+            });
 
         address marketAddress = factory.createMarket(parameters);
         markets[marketAddress] = true;
@@ -58,11 +78,6 @@ contract Keeper is IKeeper, Ownable {
 
         Market(marketAddress).freezeMarket(freeze);
     }
-
-    function setOracle(address oracle, IOracle.Type oracleType)
-        external
-        onlyOperator
-    {}
 
     function setAMM(address ammAddress) external onlyOperator {}
 

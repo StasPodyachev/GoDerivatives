@@ -3,6 +3,8 @@ pragma solidity =0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./interfaces/IFactory.sol";
+import "./interfaces/IOracle.sol";
+
 import "./interfaces/IMarketDeployer.sol";
 
 import "./MarketDeployer.sol";
@@ -10,6 +12,7 @@ import "./MarketDeployer.sol";
 contract Factory is IFactory, MarketDeployer, Ownable {
     address[] public allMarkets;
     mapping(address => bool) markets;
+    mapping(IOracle.Type => address) oracles;
 
     address public depositAddress;
     address public storageAddress;
@@ -20,6 +23,21 @@ contract Factory is IFactory, MarketDeployer, Ownable {
 
     function setDeposit(address depositAddress_) external onlyOwner {
         depositAddress = depositAddress_;
+    }
+
+    function getOracleAddress(IOracle.Type oracleType)
+        external
+        onlyOwner
+        returns (address)
+    {
+        return oracles[oracleType];
+    }
+
+    function addOracleAddress(address oracleAddress, IOracle.Type oracleType)
+        external
+        onlyOwner
+    {
+        oracles[oracleType] = oracleAddress;
     }
 
     function createMarket(Parameters memory params)
