@@ -45,4 +45,14 @@ interface IDerivativeCFD {
     event DealCanceled(uint256 dealId);
     event DealCompleted(uint256 dealId);
     event DealExpired(uint256 dealId);
+
+    function freezeMarket(bool freeze) external;
+
+    function createDeal(DealParams calldata params) external;
+
+    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker) external;
+
+    function cancelDeal(uint256 dealId) external;
+
+    function processing(uint256 dealId) external;
 }

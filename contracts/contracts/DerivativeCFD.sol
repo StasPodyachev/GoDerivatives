@@ -35,6 +35,12 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     }
 
     function freezeMarket(bool freeze) external {
+        require(
+            msg.sender == operator ||
+                msg.sender = this.owner(),
+            "DerivativeCFD: Only keeper or owner can freeze market"
+        );
+
         isFreezed_ = freeze;
     }
 
@@ -102,6 +108,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
         );
+
         uint256 collatoralAmount = (deal.count * rateOracle * deal.percent) /
             1e26;
 
