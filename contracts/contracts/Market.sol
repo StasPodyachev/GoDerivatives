@@ -19,6 +19,7 @@ contract Market is DerivativeCFD {
         storage_ = IStorage(params.storageAddress);
         keepersFee = params.keepersFee;
         serviceFee = params.serviceFee;
+        amm = params.serviceFee;
     }
 
     modifier onlyDeposit() {

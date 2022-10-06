@@ -14,6 +14,7 @@ interface IMarketDeployer {
         IOracle.Type oracleType;
         uint256 feeKeeper;
         uint256 feeService;
+        address amm;
     }
 
     function parameters() external view returns (Parameters memory params);

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IDerivativeCFD.sol";
 import "./interfaces/IDeposit.sol";
 import "./interfaces/IOracle.sol";
+import "./interfaces/IAMM.sol";
 import "./Factory.sol";
 import "./Storage.sol";
 import "./DealNFT.sol";
@@ -19,9 +20,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IDeposit public deposit;
     IOracle public oracle;
     IStorage public storage_;
-    DealNFT public _nft;
+    DealNFT public nft;
     uint256 public keepersFee; // 100% == 1e18
     uint256 public serviceFee;
+    IAMM public amm;
 
     bool public isFreezed;
 
@@ -66,7 +68,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             dateStop: 0,
             oracleAmount: 0,
             oracleRoundIDStart: 0,
-            tokenId: 0,
+            buyerTokenId: 0,
+            sellerTokenId: 0,
             status: DealStatus.CREATED
         });
 
@@ -78,6 +81,15 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             .sender;
 
         emit DealCreated(dealId);
+
+        if (address(amm) != address(0)) {
+            amm.takeDeal(
+                address(this),
+                dealId,
+                collateralAmountMaker,
+                coin
+            );
+        }
     }
 
     function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
@@ -143,11 +155,9 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             seller: deal.seller
         });
 
-        _nft.mint(mintParams);
-
+        deal.buyerTokenId = nft.mint(mintParams);
         mintParams.recipient = deal.seller;
-
-        _nft.mint(mintParams);
+        deal.sellerTokenId = nft.mint(mintParams);
 
         emit DealAccepted(dealId);
     }
