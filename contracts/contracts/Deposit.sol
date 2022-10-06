@@ -10,7 +10,7 @@ import "./Market.sol";
 contract Deposit is IDeposit, Ownable {
     mapping(address => mapping(address => uint256)) public tokenBalances;
     mapping(address => uint256) public balances;
-    uint256 public fee;
+    mapping(address => uint256) public feeKeeper;
 
     IFactory public factory;
 

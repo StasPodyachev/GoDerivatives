@@ -18,6 +18,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IDeposit public deposit;
     IOracle public oracle;
     IStorage public storage_;
+    uint256 public feeKeeper;
+    uint256 public feeService;
+
+    bool public isFreezed;
 
     mapping(uint256 => Deal) deals;
 
@@ -25,6 +29,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
     function setOracle(IOracle oracle_) external onlyOwner {
         oracle = oracle_;
+    }
+
+    function freezeMarket(bool freeze) external {
+        isFreezed = freeze;
     }
 
     function createDeal(DealParams calldata params) external payable {
