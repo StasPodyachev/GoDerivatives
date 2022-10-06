@@ -48,9 +48,11 @@ interface IDerivativeCFD {
 
     function freezeMarket(bool freeze) external;
 
-    function createDeal(DealParams calldata params) external;
+    function createDeal(DealParams calldata params) external payable;
 
-    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker) external;
+    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
+        external
+        payable;
 
     function cancelDeal(uint256 dealId) external;
 

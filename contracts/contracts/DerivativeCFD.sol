@@ -36,8 +36,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
     function freezeMarket(bool freeze) external {
         require(
-            msg.sender == operator ||
-                msg.sender = this.owner(),
+            msg.sender == operator || msg.sender == this.owner(),
             "DerivativeCFD: Only keeper or owner can freeze market"
         );
 
