@@ -7,6 +7,7 @@ import "./interfaces/IDeposit.sol";
 import "./interfaces/IOracle.sol";
 import "./Factory.sol";
 import "./Storage.sol";
+import "./DealNFT.sol";
 
 abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     address public factory;
@@ -18,6 +19,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IDeposit public deposit;
     IOracle public oracle;
     IStorage public storage_;
+    DealNFT public _nft;
 
     mapping(uint256 => Deal) deals;
     mapping(address => uint256[]) buyers;
@@ -62,6 +64,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             dateStop: 0,
             oracleAmount: 0,
             oracleRoundIDStart: 0,
+            tokenId: 0,
             status: DealStatus.CREATED
         });
 
@@ -148,6 +151,22 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             sellers[msg.sender].push(dealId);
         }
 
+        DealNFT.MintParams memory mintParams = DealNFT.MintParams({
+            dealId: dealId,
+            deadline: block.timestamp,
+            amount: collatoralAmount,
+            market: address(this),
+            recipient: deal.buyer,
+            buyer: deal.buyer,
+            seller: deal.seller
+        });
+
+        _nft.mint(mintParams);
+
+        mintParams.recipient = deal.seller;
+
+        _nft.mint(mintParams);
+
         emit TakeDeal(dealId);
     }
 
@@ -230,6 +249,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             .lockSeller = 0;
 
         deal.status = DealStatus.COMPLETED;
+
+        // get holders NFT
+        // payout for holder if won
+        // burn all tokens
 
         emit CompleteDeal(dealId);
     }

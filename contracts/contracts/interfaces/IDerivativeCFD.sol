@@ -30,6 +30,7 @@ interface IDerivativeCFD {
         uint256 dateStop;
         uint256 oracleAmount;
         uint256 oracleRoundIDStart;
+        uint256 tokenId;
         DealStatus status;
     }
 
