@@ -7,7 +7,7 @@ interface IKeeper {
 
     function setOperator(address operatorAddress) external;
 
-    function removeOperator(address operatorAddress) external;
+    function removeOperator() external;
 
     function setMarket(IMarketDeployer.Parameters memory parameters) external;
 

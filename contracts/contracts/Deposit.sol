@@ -13,9 +13,9 @@ contract Deposit is IDeposit, Ownable {
         address coin;
     }
 
-    mapping(address => mapping(address => uint256)) public tokenBalances;
-    mapping(address => uint256) public balances;
-    mapping(address => Fee) public keeperFees;
+    mapping(address => mapping(address => uint256)) public balances;
+    mapping(address => mapping(address => uint256)) public operatorFees;
+    mapping(address => uint256) public serviceFees;
 
     IFactory public factory;
 
@@ -37,7 +37,7 @@ contract Deposit is IDeposit, Ownable {
 
     /// @dev deposit ETH to balance from market
     function deposit(address recipient) external payable onlyMarket {
-        balances[recipient] += msg.value;
+        balances[recipient][address(0)] += msg.value;
 
         emit Deposit(recipient, msg.value);
     }
@@ -49,50 +49,58 @@ contract Deposit is IDeposit, Ownable {
         address recipient
     ) external onlyMarket {
         TransferHelper.safeTransferFrom(token, recipient, address(this), val);
-        tokenBalances[recipient][token] += val;
+        balances[recipient][token] += val;
 
         emit Deposit(recipient, token, val);
     }
 
     function refund(
         address recipient,
-        address token,
+        address coin,
+        uint256 val,
+        uint256 fee
+    ) external onlyMarket {
+        require(
+            balances[recipient][coin] >= val,
+            "Deposit: Insufficient balance coin to refund"
+        );
+
+        coin == address(0)
+            ? payable(recipient).transfer(val)
+            : TransferHelper.safeTransfer(coin, recipient, val);
+
+        balances[recipient][coin] -= val + fee;
+    }
+
+    function collectOperatorFee(
+        address operator,
+        address coin,
         uint256 val
     ) external onlyMarket {
-        require(
-            tokenBalances[recipient][token] >= val,
-            "Deposit: Insufficient balance token to refund"
-        );
-
-        TransferHelper.safeTransfer(token, recipient, val);
-        tokenBalances[recipient][token] -= val;
+        operatorFees[operator][coin] += val;
     }
 
-    function refund(address payable recipient, uint256 val)
-        external
-        onlyMarket
-    {
-        require(
-            balances[recipient] >= val,
-            "Deposit: Insufficient balance ETH to refund"
-        );
+    function withdrawOperatorFee(address operator, address coin) external {
+        uint256 val = operatorFees[operator][coin];
 
-        recipient.transfer(val);
-        balances[recipient] -= val;
+        coin == address(0)
+            ? payable(operator).transfer(val)
+            : TransferHelper.safeTransfer(coin, operator, val);
+
+        operatorFees[operator][coin] = 0;
     }
 
-    function refund(
-        address payable recipient,
-        uint256 val,
-        uint256 keeperFee
-    ) external onlyMarket {
-        require(
-            balances[recipient] >= val,
-            "Deposit: Insufficient balance ETH to refund"
-        );
+    function collectServiceFee(address coin, uint256 val) external onlyMarket {
+        serviceFees[coin] += val;
+    }
 
-        recipient.transfer(val);
-        balances[recipient] -= val;
-        // Fee storage fee = keeperFees[msg.sender] = keeperFee;//?
+    function withdrawServiceFee(address coin) external onlyOwner {
+        uint256 val = serviceFees[coin];
+
+        coin == address(0)
+            ? payable(msg.sender).transfer(val)
+            : TransferHelper.safeTransfer(coin, msg.sender, val);
+
+        serviceFees[coin] = 0;
     }
 }

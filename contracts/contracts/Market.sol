@@ -17,8 +17,9 @@ contract Market is DerivativeCFD {
         oracleAddress = params.oracleAddress;
         oracleType = params.oracleType;
         storage_ = IStorage(params.storageAddress);
-        keepersFee = params.keepersFee;
-        serviceFee = params.serviceFee;
+        operatorFee_ = params.operatorFee;
+        serviceFee_ = params.serviceFee;
+        operator = params.operator;
     }
 
     modifier onlyDeposit() {

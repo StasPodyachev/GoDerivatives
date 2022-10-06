@@ -13,17 +13,22 @@ interface IDeposit {
 
     function refund(
         address recipient,
-        address token,
+        address coin,
+        uint256 val,
+        uint256 fee
+    ) external;
+
+    function collectOperatorFee(
+        address operator,
+        address coin,
         uint256 val
     ) external;
 
-    function refund(address payable recipient, uint256 val) external;
+    function withdrawOperatorFee(address operator, address coin) external;
 
-    function refund(
-        address payable recipient,
-        uint256 val,
-        uint256 keeperFee
-    ) external;
+    function collectServiceFee(address coin, uint256 val) external;
+
+    function withdrawServiceFee(address coin) external;
 
     event Deposit(address indexed dst, uint256 wad);
     event Deposit(address indexed dst, address token, uint256 wad);

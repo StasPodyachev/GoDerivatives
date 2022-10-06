@@ -16,4 +16,6 @@ interface IFactory {
     function allMarketsLength() external view returns (uint256);
 
     function isMarket(address) external returns (bool);
+
+    function depositAddress() external returns (address);
 }
