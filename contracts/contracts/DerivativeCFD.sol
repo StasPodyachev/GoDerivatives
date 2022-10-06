@@ -18,8 +18,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IDeposit public deposit;
     IOracle public oracle;
     IStorage public storage_;
-    uint256 public feeKeeper;
-    uint256 public feeService;
+    uint256 public keepersFee; // 100% == 1e18
+    uint256 public serviceFee;
 
     bool public isFreezed;
 
@@ -209,17 +209,27 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 deal.collateralAmountSeller +
                 deal.collateralAmountBuyer;
         }
-
+        uint256 feeKeeper;
         if (payoutBuyer > 0) {
+            feeKeeper = payoutBuyer > deal.collateralAmountBuyer
+                ? ((payoutBuyer - deal.collateralAmountBuyer) * keepersFee) /
+                    1e18
+                : 0;
+
             coin == address(0)
-                ? deposit.refund(payable(deal.buyer), payoutBuyer)
-                : deposit.refund(deal.buyer, coin, payoutBuyer);
+                ? deposit.refund(payable(deal.buyer), payoutBuyer, feeKeeper)
+                : deposit.refund(deal.buyer, coin, payoutBuyer, feeKeeper);
         }
 
         if (payoutSeller > 0) {
+            feeKeeper = payoutSeller > deal.collateralAmountSeller
+                ? ((payoutSeller - deal.collateralAmountSeller) * keepersFee) /
+                    1e18
+                : 0;
+
             coin == address(0)
-                ? deposit.refund(payable(deal.seller), payoutSeller)
-                : deposit.refund(deal.seller, coin, payoutSeller);
+                ? deposit.refund(payable(deal.seller), payoutSeller, feeKeeper)
+                : deposit.refund(deal.seller, coin, payoutSeller, feeKeeper);
         }
 
         deal.status = DealStatus.COMPLETED;

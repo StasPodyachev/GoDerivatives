@@ -33,9 +33,7 @@ contract Keeper is IKeeper, Ownable {
         delete operators[operatorAddress];
     }
 
-    function takeOperatorProfit() external onlyOwner {
-        operators[operatorAddress] = true;
-    }
+    function takeOperatorProfit() external onlyOwner {}
 
     function setMarket(IMarketDeployer.Parameters memory parameters)
         external
