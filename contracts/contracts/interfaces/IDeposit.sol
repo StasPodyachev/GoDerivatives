@@ -19,6 +19,12 @@ interface IDeposit {
 
     function refund(address payable recipient, uint256 val) external;
 
+    function refund(
+        address payable recipient,
+        uint256 val,
+        uint256 keeperFee
+    ) external;
+
     event Deposit(address indexed dst, uint256 wad);
     event Deposit(address indexed dst, address token, uint256 wad);
 

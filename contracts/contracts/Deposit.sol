@@ -8,9 +8,14 @@ import "./interfaces/IDeposit.sol";
 import "./Market.sol";
 
 contract Deposit is IDeposit, Ownable {
+    struct Fee {
+        uint256 val;
+        address coin;
+    }
+
     mapping(address => mapping(address => uint256)) public tokenBalances;
     mapping(address => uint256) public balances;
-    uint256 public fee;
+    mapping(address => Fee) public keeperFees;
 
     IFactory public factory;
 
@@ -74,5 +79,20 @@ contract Deposit is IDeposit, Ownable {
 
         recipient.transfer(val);
         balances[recipient] -= val;
+    }
+
+    function refund(
+        address payable recipient,
+        uint256 val,
+        uint256 keeperFee
+    ) external onlyMarket {
+        require(
+            balances[recipient] >= val,
+            "Deposit: Insufficient balance ETH to refund"
+        );
+
+        recipient.transfer(val);
+        balances[recipient] -= val;
+        // Fee storage fee = keeperFees[msg.sender] = keeperFee;//?
     }
 }
