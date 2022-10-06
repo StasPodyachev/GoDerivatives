@@ -3,17 +3,7 @@ pragma solidity =0.8.9;
 interface IDeposit {
     function setFactory(address factory_) external;
 
-    function withdraw(
-        address market,
-        uint256 dealID,
-        uint256 amount
-    ) external;
-
-    function deposit() external payable;
-
     function deposit(address recipient) external payable;
-
-    function deposit(address token, uint256 val) external;
 
     function deposit(
         address token,
@@ -21,25 +11,18 @@ interface IDeposit {
         address recipient
     ) external;
 
-    function withdrawAll() external;
-
-    function withdrawAllEth() external;
-
-    function withdrawAllErc20(address token) external;
-
-    function withdrawAllErc20() external;
-
     function refund(
         address recipient,
         address token,
-        uint256 val,
-        bool remove
+        uint256 val
     ) external;
+
+    function refund(address payable recipient, uint256 val) external;
 
     function refund(
         address payable recipient,
         uint256 val,
-        bool remove
+        uint256 keeperFee
     ) external;
 
     event Deposit(address indexed dst, uint256 wad);

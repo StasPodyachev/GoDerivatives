@@ -20,15 +20,21 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     IOracle public oracle;
     IStorage public storage_;
     DealNFT public _nft;
+    uint256 public keepersFee; // 100% == 1e18
+    uint256 public serviceFee;
+
+    bool public isFreezed;
 
     mapping(uint256 => Deal) deals;
-    mapping(address => uint256[]) buyers;
-    mapping(address => uint256[]) sellers;
 
     constructor() {}
 
     function setOracle(IOracle oracle_) external onlyOwner {
         oracle = oracle_;
+    }
+
+    function freezeMarket(bool freeze) external {
+        isFreezed = freeze;
     }
 
     function createDeal(DealParams calldata params) external payable {
@@ -46,10 +52,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             maker: msg.sender,
             buyer: address(0),
             seller: address(0),
-            balanceBuyer: 0,
-            balanceSeller: 0,
-            lockBuyer: 0,
-            lockSeller: 0,
             rate: 0,
             count: params.count,
             percent: params.percent,
@@ -68,23 +70,14 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             status: DealStatus.CREATED
         });
 
-        uint256 dealId = storage_.addDeal(address(this));
+        uint256 dealId = storage_.addDealId();
 
         deals[dealId] = deal;
 
-        if (params.makerPosition) {
-            deal.buyer = msg.sender;
-            deal.balanceBuyer = deal.lockBuyer = collateralAmountMaker;
+        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
 
-            buyers[msg.sender].push(dealId);
-        } else {
-            deal.seller = msg.sender;
-            deal.balanceSeller = deal.lockSeller = collateralAmountMaker;
-
-            sellers[msg.sender].push(dealId);
-        }
-
-        emit MakeDeal(dealId);
+        emit DealCreated(dealId);
     }
 
     function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
@@ -118,16 +111,14 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deposit.deposit(msg.sender);
             deposit.refund(
                 payable(deal.maker),
-                deal.collateralAmountMaker - collatoralAmount,
-                false
+                deal.collateralAmountMaker - collatoralAmount
             );
         } else {
             deposit.deposit(coin, collatoralAmount, msg.sender);
             deposit.refund(
                 deal.maker,
                 coin,
-                deal.collateralAmountMaker - collatoralAmount,
-                false
+                deal.collateralAmountMaker - collatoralAmount
             );
         }
 
@@ -135,21 +126,12 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.collateralAmountBuyer = collatoralAmount;
         deal.collateralAmountSeller = collatoralAmount;
         deal.rate = rateOracle;
-        deal.balanceBuyer = collatoralAmount;
-        deal.balanceSeller = collatoralAmount;
-        deal.lockBuyer = collatoralAmount;
-        deal.lockSeller = collatoralAmount;
         deal.dateStart = block.timestamp;
         deal.dateStop = deal.dateStart + duration;
         deal.status = DealStatus.ACCEPTED;
 
-        if (deal.buyer == address(0)) {
-            deal.buyer = msg.sender;
-            buyers[msg.sender].push(dealId);
-        } else {
-            deal.seller = msg.sender;
-            sellers[msg.sender].push(dealId);
-        }
+        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
 
         DealNFT.MintParams memory mintParams = DealNFT.MintParams({
             dealId: dealId,
@@ -167,45 +149,49 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         _nft.mint(mintParams);
 
-        emit TakeDeal(dealId);
+        emit DealAccepted(dealId);
     }
 
     function cancelDeal(uint256 dealId) external {
         Deal storage deal = deals[dealId];
+        _cancel(deal, DealStatus.CANCELED);
+
+        emit DealCanceled(dealId);
+    }
+
+    function _cancel(Deal storage deal, DealStatus status) internal {
         require(
             deal.maker == msg.sender,
             "DerivativeCFD: Only maker can cancel the deal"
         );
+
         require(
             deal.status == DealStatus.CREATED,
-            "DerivativeCFD: Deal already started"
+            "DerivativeCFD: Deal status is not created"
         );
 
         coin == address(0)
-            ? deposit.refund(
-                payable(deal.maker),
-                deal.collateralAmountMaker,
-                false
-            )
-            : deposit.refund(
-                deal.maker,
-                coin,
-                deal.collateralAmountMaker,
-                false
-            );
+            ? deposit.refund(payable(deal.maker), deal.collateralAmountMaker)
+            : deposit.refund(deal.maker, coin, deal.collateralAmountMaker);
 
-        deal.balanceBuyer = deal.lockBuyer = deal.balanceSeller = deal
-            .lockSeller = 0;
-
-        deal.status = DealStatus.CANCELED;
-
-        emit CancelDeal(dealId);
+        deal.status = status;
     }
 
     function processing(uint256 dealId) external {
         Deal storage deal = deals[dealId];
 
         require(deal.collateralAmountBuyer != 0, "DerivativeCFD: Wrong dealID");
+
+        if (
+            deal.status == DealStatus.CREATED &&
+            deal.dateOrderExpiration <= block.timestamp
+        ) {
+            _cancel(deal, DealStatus.EXPIRED);
+            emit DealExpired(dealId);
+
+            return;
+        }
+
         require(
             deal.status == DealStatus.ACCEPTED &&
                 deal.dateStop <= block.timestamp
@@ -242,11 +228,28 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 deal.collateralAmountSeller +
                 deal.collateralAmountBuyer;
         }
+        uint256 feeKeeper;
+        if (payoutBuyer > 0) {
+            feeKeeper = payoutBuyer > deal.collateralAmountBuyer
+                ? ((payoutBuyer - deal.collateralAmountBuyer) * keepersFee) /
+                    1e18
+                : 0;
 
-        //refund
+            coin == address(0)
+                ? deposit.refund(payable(deal.buyer), payoutBuyer, feeKeeper)
+                : deposit.refund(deal.buyer, coin, payoutBuyer, feeKeeper);
+        }
 
-        deal.balanceBuyer = deal.lockBuyer = deal.balanceSeller = deal
-            .lockSeller = 0;
+        if (payoutSeller > 0) {
+            feeKeeper = payoutSeller > deal.collateralAmountSeller
+                ? ((payoutSeller - deal.collateralAmountSeller) * keepersFee) /
+                    1e18
+                : 0;
+
+            coin == address(0)
+                ? deposit.refund(payable(deal.seller), payoutSeller, feeKeeper)
+                : deposit.refund(deal.seller, coin, payoutSeller, feeKeeper);
+        }
 
         deal.status = DealStatus.COMPLETED;
 
@@ -254,6 +257,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         // payout for holder if won
         // burn all tokens
 
-        emit CompleteDeal(dealId);
+        emit DealCompleted(dealId);
     }
 }
