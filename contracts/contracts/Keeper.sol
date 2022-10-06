@@ -5,48 +5,75 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IMarketDeployer.sol";
 import "./interfaces/IFactory.sol";
 import "./interfaces/IKeeper.sol";
+import "./interfaces/IOracle.sol";
 import "./Market.sol";
 
 contract Keeper is IKeeper, Ownable {
-    mapping(address => mapping(address => bool)) operatorMarkets;
-    mapping(address => bool) operators;
+    mapping(address => bool) markets;
+    address operator;
+    address storageAddress;
 
     IFactory factory;
+    IDeposit deposit;
 
     modifier onlyOperator() {
-        require(
-            operators[msg.sender] == true,
-            "Keeper: Caller is not an operator"
-        );
+        require(msg.sender == operator, "Keeper: Caller is not an operator");
         _;
     }
 
     function setFactory(address factoryAddress) external onlyOwner {
         factory = IFactory(factoryAddress);
+        deposit = IDeposit(factory.depositAddress());
+        storageAddress = factory.storageAddress();
     }
 
     function setOperator(address operatorAddress) external onlyOwner {
-        operators[operatorAddress] = true;
+        operator = operatorAddress;
     }
 
-    function removeOperator(address operatorAddress) external onlyOwner {
-        delete operators[operatorAddress];
+    function removeOperator() external onlyOwner {
+        operator = address(0);
     }
 
-    function takeOperatorProfit() external onlyOwner {}
+    function takeOperatorProfit(address coin) external onlyOperator {
+        deposit.withdrawOperatorFee(operator, coin);
+    }
 
-    function setMarket(IMarketDeployer.Parameters memory parameters)
+    function setMarket(
+        string memory underlyingAssetName,
+        address coin,
+        uint256 duration,
+        address oracleAggregatorAddress,
+        IOracle.Type oracleType,
+        uint256 operatorFee,
+        uint256 serviceFee
+    ) external onlyOperator {
+        IMarketDeployer.Parameters memory parameters = IMarketDeployer
+            .Parameters({
+                factory: address(factory),
+                deposit: address(deposit),
+                operator: operator,
+                underlyingAssetName: underlyingAssetName,
+                coin: coin,
+                duration: duration,
+                oracleAggregatorAddress: oracleAggregatorAddress,
+                storageAddress: storageAddress,
+                oracleType: oracleType,
+                operatorFee: operatorFee,
+                serviceFee: serviceFee
+            });
+
+        address marketAddress = factory.createMarket(parameters);
+        markets[marketAddress] = true;
+    }
+
+    function freezeMarket(address marketAddress, bool freeze)
         external
         onlyOperator
     {
-        address marketAddress = factory.createMarket(parameters);
-        operatorMarkets[msg.sender][marketAddress] = true;
-    }
-
-    function freezeMarket(address marketAddress, bool freeze) external {
         require(
-            operatorMarkets[msg.sender][marketAddress] == true,
-            "Keeper: Caller is not an operator"
+            markets[marketAddress] == true,
+            "Keeper: Market does not exist"
         );
 
         Market(marketAddress).freezeMarket(freeze);
@@ -57,6 +84,4 @@ contract Keeper is IKeeper, Ownable {
     function freezeAMM(address ammAddress) external onlyOperator {}
 
     function deleteAMM(address ammAddress) external onlyOperator {}
-
-    function setOracle(address operator) external onlyOperator {}
 }

@@ -6,14 +6,15 @@ interface IMarketDeployer {
     struct Parameters {
         address factory;
         address deposit;
+        address operator;
         string underlyingAssetName;
         address coin;
         uint256 duration;
-        address oracleAddress;
+        address oracleAggregatorAddress;
         address storageAddress;
         IOracle.Type oracleType;
-        uint256 feeKeeper;
-        uint256 feeService;
+        uint256 operatorFee;
+        uint256 serviceFee;
     }
 
     function parameters() external view returns (Parameters memory params);
