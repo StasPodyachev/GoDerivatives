@@ -1,17 +1,16 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { Address } from "hardhat-deploy/dist/types";
-import { ContractFunctionVisibility } from "hardhat/internal/hardhat-network/stack-traces/model";
 
 import {
   Deposit,
   Deposit__factory,
-  DerivativeCFD,
-  DerivativeCFD__factory,
+  // DerivativeCFD,
+  // DerivativeCFD__factory,
   Factory,
   Factory__factory,
-  Market,
-  Market__factory,
+  // Market,
+  // Market__factory,
   MockV3Aggregator,
   MockV3Aggregator__factory,
   MarketDeployer,
@@ -42,6 +41,7 @@ async function deployMockV3Aggregator(
     DECIMALS,
     INITIAL_PRICE
   );
+  mockV3Aggregator.connect(owner);
 
   return mockV3Aggregator;
 }
@@ -60,6 +60,7 @@ async function deployTestUSDC(owner: SignerWithAddress): Promise<SimpleToken> {
     "USDC",
     ethers.utils.parseEther("1000000000")
   );
+  testUSDC.connect(owner);
 
   return testUSDC;
 }
@@ -104,10 +105,69 @@ async function deployOracle(
   )) as Oracle__factory;
   oracleFactory.connect(owner);
   oracle = await oracleFactory.deploy();
+  oracle.connect(owner);
 
   await oracle.setAggregator(mockV3AggregatorAddress);
 
   return oracle;
+}
+
+async function deployFactory(owner: SignerWithAddress): Promise<Factory> {
+  console.log("Deploy factory...");
+  let factory: Factory;
+  let factoryFactory: Factory__factory;
+  factoryFactory = (await ethers.getContractFactory(
+    "Factory"
+  )) as Factory__factory;
+  factoryFactory.connect(owner);
+  factory = await factoryFactory.deploy();
+  factory.connect(owner);
+
+  return factory;
+}
+
+async function deployStorage(owner: SignerWithAddress): Promise<Storage> {
+  console.log("Deploy storage...");
+  let storage: Storage;
+  let storageFactory: Storage__factory;
+  storageFactory = (await ethers.getContractFactory(
+    "Storage"
+  )) as Storage__factory;
+  storageFactory.connect(owner);
+  storage = await storageFactory.deploy();
+  storage.connect(owner);
+
+  return storage;
+}
+
+async function deployMarketDeployer(
+  owner: SignerWithAddress
+): Promise<MarketDeployer> {
+  console.log("Deploy marketDeployer...");
+  let marketDeployer: MarketDeployer;
+  let marketDeployerFactory: MarketDeployer__factory;
+  marketDeployerFactory = (await ethers.getContractFactory(
+    "MarketDeployer"
+  )) as MarketDeployer__factory;
+  marketDeployerFactory.connect(owner);
+  marketDeployer = await marketDeployerFactory.deploy();
+  marketDeployer.connect(owner);
+
+  return marketDeployer;
+}
+
+async function deployDeposit(owner: SignerWithAddress): Promise<Deposit> {
+  console.log("Deploy deposit...");
+  let deposit: Deposit;
+  let depositFactory: Deposit__factory;
+  depositFactory = (await ethers.getContractFactory(
+    "Deposit"
+  )) as Deposit__factory;
+  depositFactory.connect(owner);
+  deposit = await depositFactory.deploy();
+  deposit.connect(owner);
+
+  return deposit;
 }
 
 export async function setup() {
@@ -128,11 +188,12 @@ export async function setup() {
   testUSDC.connect(owner);
   await sendToTraders(testUSDC, owner.address, maker.address, taker.address);
 
-  // deploy oracle
+  // deploy oracle and set aggregator
   const oracle = await deployOracle(owner, mockV3Aggregator.address);
 
-  // deploy factory
-  // const deployFactory = await deployFactory;
-
-  // const factory = await factoryFactory.deploy();
+  // deploy all other core contracts
+  const factory = await deployFactory(owner);
+  const storage = await deployStorage(owner);
+  const marketDeployer = await deployMarketDeployer(owner);
+  const deposit = await deployDeposit(owner);
 }
