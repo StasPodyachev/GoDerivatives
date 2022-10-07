@@ -18,6 +18,7 @@ contract Market is DerivativeCFD {
         oracleAggregatorAddress = params.oracleAggregatorAddress;
         oracleType = params.oracleType;
         storage_ = IStorage(params.storageAddress);
+        amm = IAMM(params.amm);
         operatorFee_ = params.operatorFee;
         serviceFee_ = params.serviceFee;
         operator = params.operator;

@@ -33,7 +33,7 @@ struct Deal {
 }
 
  mapping(uint => Deal) _deals;
- mapping(uint => Holder[]) _holders;
+ mapping(uint => address[]) _holders;
  
  constructor() ERC1155("https://cfd-app.vercel.app/nft/{id}"){
 
@@ -56,7 +56,7 @@ struct Deal {
     {
       bytes memory tmp; // 
 
-      _mint(params.buyer, (tokenId = _nextId++), params.amount, tmp);
+      _mint(params.recipient, (tokenId = _nextId++), params.amount, tmp);
 
       _deals[tokenId] = Deal({
         id: params.dealId,
@@ -67,17 +67,14 @@ struct Deal {
         market: params.market
       });
 
-      _holders[params.dealId].push(Holder({
-        addr: params.recipient,
-        tokenId: tokenId
-      }));
+      _holders[tokenId].push(params.recipient);
     }
 
-  function getHolders(uint dealId) external view returns(Holder[] memory holders_) {
-    Holder[] memory holders = _holders[dealId];
+  function getHolders(uint tokenId) external view returns(address[] memory holders_) {
+    address[] memory holders = _holders[tokenId];
     uint index = 0;
     for(uint i = 0; i<holders.length; i++){
-      if(balanceOf(holders[i].addr, holders[i].tokenId)>0)
+      if(balanceOf(holders[i], tokenId)>0)
       holders_[index++] = holders[i];
     }
   }
@@ -98,16 +95,8 @@ struct Deal {
         bytes memory data
   ) internal override {
     if(from == address(0) || to == address(0)) return;
-
-    Deal memory deal = _deals[ids[0]];
-
-    _holders[deal.id].push(Holder({
-        addr: to,
-        tokenId: ids[0]
-      }));
-
-    deal.isBuyer = deal.buyer == to;
-    _deals[ids[0]] = deal;
+    
+    _holders[ids[0]].push(to);
   }
 
   function uri(uint id) public pure override returns(string memory) {

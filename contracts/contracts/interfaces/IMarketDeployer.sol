@@ -13,6 +13,7 @@ interface IMarketDeployer {
         address oracleAggregatorAddress;
         address storageAddress;
         IOracle.Type oracleType;
+        address amm;
         uint256 operatorFee;
         uint256 serviceFee;
     }

@@ -39,7 +39,7 @@ contract Keeper is IKeeper, Ownable {
         deposit.withdrawOperatorFee(operator, coin);
     }
 
-    function setMarket(
+    function createMarket(
         string memory underlyingAssetName,
         address coin,
         uint256 duration,
@@ -60,7 +60,8 @@ contract Keeper is IKeeper, Ownable {
                 storageAddress: storageAddress,
                 oracleType: oracleType,
                 operatorFee: operatorFee,
-                serviceFee: serviceFee
+                serviceFee: serviceFee,
+                amm: address(0)
             });
 
         address marketAddress = factory.createMarket(parameters);
@@ -79,9 +80,37 @@ contract Keeper is IKeeper, Ownable {
         Market(marketAddress).freezeMarket(freeze);
     }
 
-    function setAMM(address ammAddress) external onlyOperator {}
+    function createAmm(string name, address market, address coin, uint256 amount) external payable onlyOperator {
 
-    function freezeAMM(address ammAddress) external onlyOperator {}
+        bool isToken = coin !=address(0);
+
+        if(isToken){
+            require(amount > 0, "");
+        }else{
+            require(msg.value == amount, "");
+        }
+
+        IAmmDeployer.Parameters memory parameters = IAmmDeployer
+            .Parameters({
+                name: name
+            });
+
+        if(isToken){
+           
+        }
+
+        address ammAddress = factory.createAmm(parameters);
+
+        
+
+        if(market!=address(0)){
+            // set amm
+        }
+    }
+
+    function freezeAMM(address ammAddress) external onlyOperator {
+
+    }
 
     function deleteAMM(address ammAddress) external onlyOperator {}
 }
