@@ -7,7 +7,7 @@ import "./interfaces/IDeposit.sol";
 import "./interfaces/IOracle.sol";
 import "./interfaces/IAMM.sol";
 import "./interfaces/IFactory.sol";
-import "./Storage.sol";
+import "./interfaces/IStorage.sol";
 import "./DealNFT.sol";
 
 abstract contract DerivativeCFD is IDerivativeCFD, Ownable {

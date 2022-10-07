@@ -4,14 +4,18 @@ import "./interfaces/IAmmDeployer.sol";
 import "./TestAMM.sol";
 
 contract AmmDeployer is IAmmDeployer {
-    Parameters public parameters_;
+    Parameters private parameters_;
 
-    function deploy(Parameters calldata params)
-        internal
+    function deploy(Parameters memory params)
+        external
         returns (address amm)
     {
         parameters_ = params;
-        derivative = address(new TestAMM());
+        amm = address(new TestAMM());
         delete parameters_;
+    }
+
+    function parameters() external view returns (Parameters memory params) {
+        return parameters_;
     }
 }

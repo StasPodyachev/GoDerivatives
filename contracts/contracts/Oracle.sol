@@ -18,7 +18,7 @@ contract Oracle is IOracle, Ownable {
 
         uint256 lPhase = l >> 64;
         uint256 rPhase = latestRoundId >> 64;
-
+        
         if (lPhase != rPhase) return 100000000;
 
         uint256 h = latestRoundId + 1; // Not n - 1
