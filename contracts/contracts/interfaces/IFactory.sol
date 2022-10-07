@@ -1,6 +1,7 @@
 pragma solidity =0.8.9;
 
 import "./IMarketDeployer.sol";
+import "./IAmmDeployer.sol";
 
 interface IFactory {
     event MarketCreated(uint256 id);
@@ -12,6 +13,10 @@ interface IFactory {
     function createMarket(IMarketDeployer.Parameters memory params)
         external
         returns (address market);
+
+    function createAmm(IAmmDeployer.Parameters memory params)
+        external
+        returns (address amm);
 
     function allMarketsLength() external view returns (uint256);
 

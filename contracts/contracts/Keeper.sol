@@ -2,6 +2,7 @@ pragma solidity =0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "./interfaces/IAmmDeployer.sol";
 import "./interfaces/IMarketDeployer.sol";
 import "./interfaces/IFactory.sol";
 import "./interfaces/IKeeper.sol";
@@ -80,7 +81,7 @@ contract Keeper is IKeeper, Ownable {
         Market(marketAddress).freezeMarket(freeze);
     }
 
-    function createAmm(string name, address market, address coin, uint256 amount) external payable onlyOperator {
+    function createAmm(string calldata name, address market, address coin, uint256 amount) external payable onlyOperator {
 
         bool isToken = coin !=address(0);
 
@@ -96,7 +97,7 @@ contract Keeper is IKeeper, Ownable {
             });
 
         if(isToken){
-           
+            
         }
 
         address ammAddress = factory.createAmm(parameters);

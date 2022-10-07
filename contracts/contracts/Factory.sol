@@ -11,7 +11,7 @@ import "./interfaces/IMarketDeployer.sol";
 import "./MarketDeployer.sol";
 import "./AmmDeployer.sol";
 
-contract Factory is IFactory, MarketDeployer, AmmDeployer, Ownable {
+contract Factory is IFactory, Ownable {
     address[] public allMarkets;
     mapping(address => bool) markets;
 
@@ -52,7 +52,7 @@ contract Factory is IFactory, MarketDeployer, AmmDeployer, Ownable {
     {
         params.factory = address(this);
         params.deposit = depositAddress;
-        market = deploy(params);
+        market = new MarketDeployer().deploy(params);
 
         allMarkets.push(market);
         markets[market] = true;
@@ -64,7 +64,7 @@ contract Factory is IFactory, MarketDeployer, AmmDeployer, Ownable {
         external
         returns (address amm)
     {
-        amm = deploy();
+        amm = new AmmDeployer().deploy(params);
 
         allAmms.push(amm);
         amms[amm] = true;
@@ -85,6 +85,6 @@ contract Factory is IFactory, MarketDeployer, AmmDeployer, Ownable {
     }
 
     function isAmm(address ammAddress) external view returns (bool) {
-        return amms[marketAddress];
+        return amms[ammAddress];
     }
 }
