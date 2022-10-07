@@ -6,8 +6,8 @@ import { DerivativeCFD, DerivativeCFD__factory } from "../../typechain";
 import { setup } from "./deploy-unit";
 
 describe("DerivativeCFD", () => {
-  beforeEach(() => {});
-  it("sets the aggregator addresses correctly", async () => {
+  beforeEach(async () => {
     await setup();
   });
+  it("sets the aggregator addresses correctly", async () => {});
 });

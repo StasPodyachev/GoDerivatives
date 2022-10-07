@@ -21,10 +21,11 @@ import {
   SimpleToken__factory,
   Storage,
   Storage__factory,
+  IOracle,
 } from "../../typechain";
 
 const DECIMALS = "18";
-const INITIAL_PRICE = "80000000000000000000"; // 100
+const INITIAL_PRICE = "80000000000000000000"; // 80
 
 async function deployMockV3Aggregator(
   owner: SignerWithAddress
@@ -107,8 +108,6 @@ async function deployOracle(
   oracle = await oracleFactory.deploy();
   oracle.connect(owner);
 
-  await oracle.setAggregator(mockV3AggregatorAddress);
-
   return oracle;
 }
 
@@ -185,7 +184,6 @@ export async function setup() {
 
   // deploy TestUSDC as quote asset and send to traders
   const testUSDC = await deployTestUSDC(owner);
-  testUSDC.connect(owner);
   await sendToTraders(testUSDC, owner.address, maker.address, taker.address);
 
   // deploy oracle and set aggregator
@@ -196,4 +194,35 @@ export async function setup() {
   const storage = await deployStorage(owner);
   const marketDeployer = await deployMarketDeployer(owner);
   const deposit = await deployDeposit(owner);
+
+  // set reference dependencies
+  console.log("Setting dependencies...");
+  await factory.setDeposit(deposit.address);
+  await factory.setStorage(storage.address);
+
+  await storage.setFactory(factory.address);
+
+  await deposit.setFactory(factory.address);
+
+  // set marketDeployer parameters
+  let wtiMarketParameters = {
+    factory: factory.address,
+    deposit: deposit.address,
+    operator: owner.address,
+    underlyingAssetName: "WTI",
+    coin: testUSDC.address,
+    duration: 864000,
+    oracleAggregatorAddress: mockV3Aggregator.address,
+    storageAddress: storage.address,
+    oracleType: 0,
+    operatorFee: 3,
+    serviceFee: 3,
+  };
+
+  // deploy WTI/USDC market
+  const createMarketTx = await factory.createMarket(wtiMarketParameters);
+  await createMarketTx.wait();
+
+  // const wtiMarket = await factory.allMarkets(0);
+  // console.log(`${wtiMarket}`);
 }
