@@ -8,18 +8,17 @@ contract TestAMM {
     function takeDeal(
         address market,
         uint256 dealId,
-        uint256 amount,
+        uint256 rateTaker,
+        uint256 slippageTaker,
         address coin
     ) external {
         // console.log("takeDeal TestAMM");
-        
-        if(coin == address(0)){
-            IDerivativeCFD(market).takeDeal{value: amount}(dealId, amount);  
-
-        }else {
-            TransferHelper.safeApprove(coin, market, amount);
-            IDerivativeCFD(market).takeDeal(dealId, amount);   
-        }
+        // if(coin == address(0)){
+        //     IDerivativeCFD(market).takeDeal{value: amount}(dealId, rateTaker, slippageTaker);
+        // }else {
+        //     TransferHelper.safeApprove(coin, market, amount);
+        //     IDerivativeCFD(market).takeDeal(dealId, amount);
+        // }
     }
 
     receive() external payable {}

@@ -123,7 +123,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             oracleAggregatorAddress
         ); // 1e8
 
-        uint256 collatoralAmount = (deal.count * rateOracle * deal.percent) /
+        uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
             1e26;
 
         deal.slippageTaker =
@@ -137,32 +137,32 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deal.slippageTaker;
 
         require(
-            collatoralAmount <= collatoralAmountTaker,
+            collateralAmount <= collateralAmountTaker,
             "DerivativeCFD: Insufficient amount of deposit for the deal"
         );
 
         require(
             (rateOracle > deal.rateMaker - deal.slippageMaker &&
                 rateOracle >= deal.rateMaker + deal.slippageMaker) &&
-                (rateOracle > deal.rateTaker - deal.slippageTaker &&
-                    rateOracle >= deal.rateTaker + deal.slippageTaker),
+                (rateOracle > deal.rate - deal.slippageTaker &&
+                    rateOracle >= deal.rate + deal.slippageTaker),
             "DerivativeCFD: Deposit Out of range"
         );
 
         msg.value > 0
             ? deposit.deposit{value: msg.value}(msg.sender)
-            : deposit.deposit(coin, collatoralAmount, msg.sender);
+            : deposit.deposit(coin, collateralAmount, msg.sender);
 
         deposit.refund(
             deal.maker,
             coin,
-            deal.collateralAmountMaker - collatoralAmount,
+            deal.collateralAmountMaker - collateralAmount,
             0
         );
 
         deal.oracleRoundIDStart = roundId;
-        deal.collateralAmountBuyer = collatoralAmount;
-        deal.collateralAmountSeller = collatoralAmount;
+        deal.collateralAmountBuyer = collateralAmount;
+        deal.collateralAmountSeller = collateralAmount;
         deal.rate = rateOracle;
         deal.dateStart = block.timestamp;
         deal.dateStop = deal.dateStart + duration;
@@ -174,7 +174,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         DealNFT.MintParams memory mintParams = DealNFT.MintParams({
             dealId: dealId,
             deadline: block.timestamp,
-            amount: collatoralAmount,
+            amount: collateralAmount,
             market: address(this),
             recipient: deal.buyer,
             buyer: deal.buyer,

@@ -53,9 +53,11 @@ interface IDerivativeCFD {
 
     function createDeal(DealParams calldata params) external payable;
 
-    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
-        external
-        payable;
+    function takeDeal(
+        uint256 dealId,
+        uint256 rateTaker,
+        uint256 slippageTaker
+    ) external payable;
 
     function cancelDeal(uint256 dealId) external;
 
