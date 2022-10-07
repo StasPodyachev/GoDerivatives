@@ -4,10 +4,10 @@ import "./interfaces/IMarketDeployer.sol";
 import "./Market.sol";
 
 contract MarketDeployer is IMarketDeployer {
-    Parameters public parameters_;
+    Parameters private parameters_;
 
     function deploy(Parameters memory params)
-        internal
+        external
         returns (address derivative)
     {
         parameters_ = params;

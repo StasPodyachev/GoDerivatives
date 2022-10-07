@@ -14,10 +14,12 @@ interface IDerivativeCFD {
         address buyer;
         address seller;
         uint256 rate;
+        uint256 rateMaker;
         uint256 count; //CFD_Hackathon: Количество контрактов 10^18 = 1
         uint256 percent; // 100% = 1e18 //
         uint256 periodOrderExpiration;
-        uint256 slippage;
+        uint256 slippageMaker;
+        uint256 slippageTaker;
         uint256 collateralAmountMaker;
         uint256 collateralAmountBuyer;
         uint256 collateralAmountSeller;
@@ -51,9 +53,11 @@ interface IDerivativeCFD {
 
     function createDeal(DealParams calldata params) external payable;
 
-    function takeDeal(uint256 dealId, uint256 collatoralAmountTaker)
-        external
-        payable;
+    function takeDeal(
+        uint256 dealId,
+        uint256 rateTaker,
+        uint256 slippageTaker
+    ) external payable;
 
     function cancelDeal(uint256 dealId) external;
 

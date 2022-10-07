@@ -9,7 +9,7 @@ interface IKeeper {
 
     function removeOperator() external;
 
-    function setMarket(
+    function createMarket(
         string memory underlyingAssetName,
         address coin,
         uint256 duration,
@@ -21,7 +21,7 @@ interface IKeeper {
 
     function freezeMarket(address marketAddress, bool freeze) external;
 
-    function setAMM(address ammAddress) external;
+    function createAmm(string calldata name, address market, address coin, uint256 amount) external payable;
 
     function freezeAMM(address ammAddress) external;
 
