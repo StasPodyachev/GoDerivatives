@@ -95,8 +95,7 @@ struct Deal {
         bytes memory data
   ) internal override {
     if(from == address(0) || to == address(0)) return;
-
-    Deal memory deal = _deals[ids[0]];
+    
     _holders[ids[0]].push(to);
   }
 

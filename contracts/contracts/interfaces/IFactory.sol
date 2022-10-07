@@ -16,4 +16,15 @@ interface IFactory {
     function allMarketsLength() external view returns (uint256);
 
     function isMarket(address) external returns (bool);
+
+    function depositAddress() external returns (address);
+
+    function storageAddress() external returns (address);
+
+    function getOracleAddress(IOracle.Type oracleType)
+        external
+        returns (address);
+
+    function addOracleAddress(address oracleAddress, IOracle.Type oracleType)
+        external;
 }
