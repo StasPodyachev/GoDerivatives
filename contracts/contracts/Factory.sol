@@ -33,7 +33,6 @@ contract Factory is IFactory, Ownable {
 
     function getOracleAddress(IOracle.Type oracleType)
         external
-        onlyOwner
         returns (address)
     {
         return oracles[oracleType];
@@ -60,7 +59,7 @@ contract Factory is IFactory, Ownable {
         emit MarketCreated(allMarkets.length);
     }
 
-     function createAmm(IAmmDeployer.Parameters memory params)
+    function createAmm(IAmmDeployer.Parameters memory params)
         external
         returns (address amm)
     {
