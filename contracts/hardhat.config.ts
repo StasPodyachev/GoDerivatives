@@ -33,9 +33,9 @@ const config = {
     },
     "klay-cn": {
       url: process.env.KLAY_RPC_URL,
-      chainId: 1002,
+      chainId: 1001,
       accounts: [
-        process.env.KLAY_PRIVATE_KEY
+        process.env.DEPLOY_PRIVATE_KEY
       ],
       // gasPrice: 100000000000,
     },

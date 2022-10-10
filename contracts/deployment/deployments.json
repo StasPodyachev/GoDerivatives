@@ -1,1 +1,103 @@
-{}
+{
+    "1001": {
+        "Factory": {
+            "proxy": "",
+            "implementation": [
+                "0x92f6D7026d47dE1f27cc8e47Fd9CBFE556EC16b4"
+            ],
+            "address": "0x92f6D7026d47dE1f27cc8e47Fd9CBFE556EC16b4",
+            "creationTime": 1665423197743,
+            "updatedTime": [
+                1665423197743
+            ]
+        },
+        "Deposit": {
+            "proxy": "",
+            "implementation": [
+                "0x4B345B207462f89c111009E652835102ffcB3205"
+            ],
+            "address": "0x4B345B207462f89c111009E652835102ffcB3205",
+            "creationTime": 1665423200066,
+            "updatedTime": [
+                1665423200066
+            ]
+        },
+        "Keeper": {
+            "proxy": "",
+            "implementation": [
+                "0x794407683A3ebb6bB6E211E1C2526A21A33B7252"
+            ],
+            "address": "0x794407683A3ebb6bB6E211E1C2526A21A33B7252",
+            "creationTime": 1665423205192,
+            "updatedTime": [
+                1665423205192
+            ]
+        },
+        "Oracle": {
+            "proxy": "",
+            "implementation": [
+                "0x6B90c7e909090742174D561682e748dB83Ea74d2"
+            ],
+            "address": "0x6B90c7e909090742174D561682e748dB83Ea74d2",
+            "creationTime": 1665423208381,
+            "updatedTime": [
+                1665423208381
+            ]
+        },
+        "Storage": {
+            "proxy": "",
+            "implementation": [
+                "0x0fc78314b13271F92e8ea1d05326E1Dd73daAcec"
+            ],
+            "address": "0x0fc78314b13271F92e8ea1d05326E1Dd73daAcec",
+            "creationTime": 1665423210744,
+            "updatedTime": [
+                1665423210744
+            ]
+        },
+        "TestAMM": {
+            "proxy": "",
+            "implementation": [
+                "0xC215d8AA7a6dd3f10Ab64dDeCed093F54110262E"
+            ],
+            "address": "0xC215d8AA7a6dd3f10Ab64dDeCed093F54110262E",
+            "creationTime": 1665423212962,
+            "updatedTime": [
+                1665423212962
+            ]
+        },
+        "DealNFT": {
+            "proxy": "",
+            "implementation": [
+                "0xef37391d7fCb89802c52aEbb0D75Bf9cEb53Bc0e"
+            ],
+            "address": "0xef37391d7fCb89802c52aEbb0D75Bf9cEb53Bc0e",
+            "creationTime": 1665423202633,
+            "updatedTime": [
+                1665423202633
+            ]
+        },
+        "tEUR": {
+            "proxy": "",
+            "implementation": [
+                "0xC66655DcFf7eB6900d30a111DE4a5f75a335eDEe"
+            ],
+            "address": "0xC66655DcFf7eB6900d30a111DE4a5f75a335eDEe",
+            "creationTime": 1665423215811,
+            "updatedTime": [
+                1665423215811
+            ]
+        },
+        "tUSD": {
+            "proxy": "",
+            "implementation": [
+                "0x266b576C6D8F76C3Fc04dcc186B23223D10b8903"
+            ],
+            "address": "0x266b576C6D8F76C3Fc04dcc186B23223D10b8903",
+            "creationTime": 1665423217982,
+            "updatedTime": [
+                1665423217982
+            ]
+        }
+    }
+}
