@@ -33,13 +33,13 @@ const contracts = [
         contractName: deployNames.TEST_AMM,
     },
     {
-        contractName: deployNames.T_EUR,
+        contractName: deployNames.T_USD,
         nameFile: "SimpleToken",
         args: ["tUSD", "tUSD", "1000000000000000000000000000"],
         ignore: false
     },
     {
-        contractName: deployNames.T_USD,
+        contractName: deployNames.T_EUR,
         nameFile: "SimpleToken",
         args: ["tEUR", "tEUR", "1000000000000000000000000000"],
         ignore: false
