@@ -1,8 +1,8 @@
 const hre = require("hardhat");
 import fs from "fs";
-import { IDeployment, recordAllDeployments } from "../../tasks/utils";
-import deployment from "../../deployment/deployments.json";
-import { deployNames } from "../../tasks/constants";
+import { IDeployment, recordAllDeployments } from "../tasks/utils";
+import deployment from "../deployment/deployments.json";
+import { deployNames } from "../tasks/constants";
 
 const deployments: IDeployment = deployment;
 
@@ -18,10 +18,7 @@ const contracts = [
     {
         contractName: deployNames.DEAL_NFT,
         args: ["https://cfd-app.vercel.app/nft/{id}"],
-        ignore: false
-    },
-    {
-        contractName: deployNames.KEEPER,
+        ignore: true
     },
     {
         contractName: deployNames.ORACLE,
@@ -36,13 +33,13 @@ const contracts = [
         contractName: deployNames.T_USD,
         nameFile: "SimpleToken",
         args: ["tUSD", "tUSD", "1000000000000000000000000000"],
-        ignore: false
+        ignore: true
     },
     {
         contractName: deployNames.T_EUR,
         nameFile: "SimpleToken",
         args: ["tEUR", "tEUR", "1000000000000000000000000000"],
-        ignore: false
+        ignore: true
     }
 ]
 

@@ -12,20 +12,36 @@ import "./Market.sol";
 contract Keeper is IKeeper, Ownable {
     mapping(address => bool) markets;
     address operator;
-    address storageAddress;
 
     IFactory factory;
     IDeposit deposit;
+
+    constructor(address operator_) {
+        factory = IFactory(msg.sender);
+        deposit = IDeposit(factory.depositAddress());
+        operator = operator_;
+        transferOwnership(factory.getOwner());
+    }
 
     modifier onlyOperator() {
         require(msg.sender == operator, "Keeper: Caller is not an operator");
         _;
     }
 
+    modifier onlyFactory() {
+        require(
+            msg.sender == address(factory),
+            "Keeper: Caller is not a factory"
+        );
+        _;
+    }
+
     function setFactory(address factoryAddress) external onlyOwner {
         factory = IFactory(factoryAddress);
-        deposit = IDeposit(factory.depositAddress());
-        storageAddress = factory.storageAddress();
+    }
+
+    function setDeposit(address depositAddress) external onlyOwner {
+        deposit = IDeposit(depositAddress);
     }
 
     function setOperator(address operatorAddress) external onlyOwner {
@@ -40,32 +56,7 @@ contract Keeper is IKeeper, Ownable {
         deposit.withdrawOperatorFee(operator, coin);
     }
 
-    function createMarket(
-        string memory underlyingAssetName,
-        address coin,
-        uint256 duration,
-        address oracleAggregatorAddress,
-        IOracle.Type oracleType,
-        uint256 operatorFee,
-        uint256 serviceFee
-    ) external onlyOperator {
-        IMarketDeployer.Parameters memory parameters = IMarketDeployer
-            .Parameters({
-                factory: address(factory),
-                deposit: address(deposit),
-                operator: operator,
-                underlyingAssetName: underlyingAssetName,
-                coin: coin,
-                duration: duration,
-                oracleAggregatorAddress: oracleAggregatorAddress,
-                storageAddress: storageAddress,
-                oracleType: oracleType,
-                operatorFee: operatorFee,
-                serviceFee: serviceFee,
-                amm: address(0)
-            });
-
-        address marketAddress = factory.createMarket(parameters);
+    function addMarket(address marketAddress) external onlyFactory {
         markets[marketAddress] = true;
     }
 
@@ -81,37 +72,34 @@ contract Keeper is IKeeper, Ownable {
         Market(marketAddress).freezeMarket(freeze);
     }
 
-    function createAmm(string calldata name, address market, address coin, uint256 amount) external payable onlyOperator {
+    function createAmm(
+        string calldata name,
+        address market,
+        address coin,
+        uint256 amount
+    ) external payable onlyOperator {
+        bool isToken = coin != address(0);
 
-        bool isToken = coin !=address(0);
-
-        if(isToken){
+        if (isToken) {
             require(amount > 0, "");
-        }else{
+        } else {
             require(msg.value == amount, "");
         }
 
-        IAmmDeployer.Parameters memory parameters = IAmmDeployer
-            .Parameters({
-                name: name
-            });
+        IAmmDeployer.Parameters memory parameters = IAmmDeployer.Parameters({
+            name: name
+        });
 
-        if(isToken){
-            
-        }
+        if (isToken) {}
 
         address ammAddress = factory.createAmm(parameters);
 
-        
-
-        if(market!=address(0)){
+        if (market != address(0)) {
             // set amm
         }
     }
 
-    function freezeAMM(address ammAddress) external onlyOperator {
-
-    }
+    function freezeAMM(address ammAddress) external onlyOperator {}
 
     function deleteAMM(address ammAddress) external onlyOperator {}
 }

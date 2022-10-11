@@ -103,11 +103,6 @@ const dealParams = {
 
         it("subtracts deposit correctly when passing collateral explicitly", async () => {
           const correctCollateral = ethers.utils.parseEther("8.20590");
-          const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
-          const makerDepositBefore = await deposit.balances(
-            maker.address,
-            ethers.constants.AddressZero
-          );
 
           const approveTx = await testUSDCMaker.approve(
             wtiMarket.address,
@@ -115,36 +110,48 @@ const dealParams = {
           );
           await approveTx.wait(1);
 
+          const makerETHBalanceBefore = await maker.getBalance();
+          const makerETHDepositBefore = await deposit.balances(
+            maker.address,
+            ethers.constants.AddressZero
+          );
+
           const dealTx = await wtiMarketMaker.createDeal(dealParams, {
             value: correctCollateral,
           });
-          await dealTx.wait(1);
+          const dealTxReceipt = await dealTx.wait();
 
-          const makerBalanceAfter = await testUSDC.balanceOf(maker.address);
-          const makerDepositAfter = await deposit.balances(
+          const makerETHBalanceAfter = await maker.getBalance();
+          const makerETHDepositAfter = await deposit.balances(
             maker.address,
             ethers.constants.AddressZero
           );
 
           assert.equal(
             correctCollateral.toString(),
-            makerDepositAfter.toString()
+            makerETHDepositAfter.toString()
           );
 
-          // Market pays gas?
-          // assert.equal(
-          //   makerBalanceAfter.add(makerDepositAfter).toString(),
-          //   makerBalanceBefore.toString()
-          // );
+          const { gasUsed, effectiveGasPrice } = dealTxReceipt;
+          const gasCost = gasUsed.mul(effectiveGasPrice);
+          console.log(`Gas cost: ${gasCost.toString()}`);
+
+          assert.equal(
+            makerETHBalanceBefore
+              .sub(makerETHDepositAfter)
+              .sub(gasCost)
+              .toString(),
+            makerETHBalanceAfter.toString()
+          );
         });
 
         it("subtracts deposit correctly when passing collateral implicitly", async () => {
           const correctCollateral = ethers.utils.parseEther("8.20590");
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
-          const makerDepositBefore = await deposit.balances(
-            maker.address,
-            ethers.constants.AddressZero
-          );
+          // const makerDepositBefore = await deposit.balances(
+          //   maker.address,
+          //   ethers.constants.AddressZero
+          // );
 
           const approveTx = await testUSDCMaker.approve(
             deposit.address,
@@ -152,14 +159,8 @@ const dealParams = {
           );
           await approveTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams, {
-            value: ethers.utils.parseEther("0"),
-          });
-          const dealTxReceipt = await dealTx.wait(1);
-
-          const { gasUsed, effectiveGasPrice } = dealTxReceipt;
-          const gasCost = gasUsed.mul(effectiveGasPrice);
-          console.log(gasCost.toString());
+          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          await dealTx.wait(1);
 
           const makerBalanceAfter = await testUSDC.balanceOf(maker.address);
           const makerDepositAfter = await deposit.balances(
@@ -172,7 +173,6 @@ const dealParams = {
             makerDepositAfter.toString()
           );
 
-          // Market pays gas?
           assert.equal(
             makerBalanceAfter.add(makerDepositAfter).toString(),
             makerBalanceBefore.toString()
@@ -197,5 +197,7 @@ const dealParams = {
         });
       });
 
-      describe("Take deal", () => {});
+      describe("Take deal", () => {
+        beforeEach(async () => {});
+      });
     });

@@ -1,10 +1,12 @@
 const hre = require("hardhat");
 import fs from "fs";
-import { IDeployment, recordAllDeployments } from "../../tasks/utils";
-import deployment from "../../deployment/deployments.json";
+import { IDeployment, recordAllDeployments } from "../tasks/utils";
+import deployment from "../deployment/deployments.json";
 
-import { deployNames } from "../../tasks/constants";
-import { Deposit, Factory, Keeper, Storage } from "../../typechain";
+import { deployNames } from "../tasks/constants";
+import { Deposit, Factory, Keeper, Storage } from "../typechain";
+import { BigNumber } from "ethers";
+
 const deployments: IDeployment = deployment;
 
 let accounts: any
@@ -19,10 +21,6 @@ const contracts = [
     {
         contractName: deployNames.DEPOSIT,
         func: deposit
-    },
-    {
-        contractName: deployNames.KEEPER,
-        func: keeper
     },
     {
         contractName: deployNames.STORAGE,
@@ -48,30 +46,52 @@ async function factory() {
     const factoryDeployed = deployments[network][deployNames.FACTORY];
     const depositDeployed = deployments[network][deployNames.DEPOSIT];
     const storageDeployed = deployments[network][deployNames.STORAGE];
+    const tUsdDeployed = deployments[network][deployNames.T_USD];
 
     const factory = await hre.ethers.getContractAt(
         deployNames.FACTORY,
         factoryDeployed.address
     ) as Factory
 
-    await factory.setStorage(storageDeployed.address);
-    await factory.setDeposit(depositDeployed.address);
-}
+    let tx = await factory.setStorage(storageDeployed.address);
+    await tx.wait()
 
-async function keeper() {
-    const network = await hre.getChainId();
+    tx = await factory.setDeposit(depositDeployed.address);
+    await tx.wait()
 
-    const factoryDeployed = deployments[network][deployNames.FACTORY];
-    const keeperDeployed = deployments[network][deployNames.KEEPER];
+    tx = await factory.createMarket({
+        coin: tUsdDeployed.address,
+        oracleAggregatorAddress: "0x76Aa17dCda9E8529149E76e9ffaE4aD1C4AD701B",
+        underlyingAssetName: "WEMIX",
+        duration: 300,
+        oracleType: 0,
+        operatorFee: BigNumber.from("5000000000000000"), // 0.5%
+        serviceFee: BigNumber.from("10000000000000000") // 1%
+    })
 
-    const keeper = await hre.ethers.getContractAt(
-        deployNames.KEEPER,
-        keeperDeployed.address
-    ) as Keeper
+    const result = await tx.wait()
 
-    await keeper.setFactory(factoryDeployed.address);
+    const events = result.events?.filter(s => s.address == factory.address) ?? []
 
-    await keeper.setOperator(accounts[0].address);
+
+    const contractNames = events.length == 2 ? [
+        "Keeper",
+        "Market"
+    ] : ["Market"]
+
+    for (let i = 0; i < events.length; i++) {
+        const ev = events[i]
+        const writeData = await recordAllDeployments(
+            network,
+            contractNames[i],
+            "",
+            ev.args ? ev.args[0] : ""
+        );
+        fs.writeFileSync(
+            "./deployment/deployments.json",
+            JSON.stringify(writeData)
+        );
+    }
 }
 
 async function storage() {

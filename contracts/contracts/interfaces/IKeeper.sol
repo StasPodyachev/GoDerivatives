@@ -9,19 +9,16 @@ interface IKeeper {
 
     function removeOperator() external;
 
-    function createMarket(
-        string memory underlyingAssetName,
-        address coin,
-        uint256 duration,
-        address oracleAggregatorAddress,
-        IOracle.Type oracleType,
-        uint256 operatorFee,
-        uint256 serviceFee
-    ) external;
+    function addMarket(address marketAddress) external;
 
     function freezeMarket(address marketAddress, bool freeze) external;
 
-    function createAmm(string calldata name, address market, address coin, uint256 amount) external payable;
+    function createAmm(
+        string calldata name,
+        address market,
+        address coin,
+        uint256 amount
+    ) external payable;
 
     function freezeAMM(address ammAddress) external;
 

@@ -6,10 +6,7 @@ import "./interfaces/IStorage.sol";
 import "./interfaces/IFactory.sol";
 
 contract Market is DerivativeCFD {
-    constructor() {
-        IMarketDeployer.Parameters memory params = IMarketDeployer(msg.sender)
-            .parameters();
-
+    constructor(IMarketDeployer.Parameters memory params) {
         factory = params.factory;
         deposit = IDeposit(params.deposit);
         coin = params.coin;
