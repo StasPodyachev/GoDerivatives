@@ -48,7 +48,7 @@ const dealParams = {
 
 !developmentChains.includes(network.name)
   ? describe.skip
-  : describe("DerivativeCFD Unit Tests", function () {
+  : describe("DerivativeCFD Unit Tests", () => {
       beforeEach(async () => {
         // Deploy core contracts and
         const setupItems = await setup();
@@ -196,4 +196,6 @@ const dealParams = {
           assert.equal(dealId.toString(), "1");
         });
       });
+
+      describe("Take deal", () => {});
     });
