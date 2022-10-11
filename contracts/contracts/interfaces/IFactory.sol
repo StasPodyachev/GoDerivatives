@@ -4,13 +4,26 @@ import "./IMarketDeployer.sol";
 import "./IAmmDeployer.sol";
 
 interface IFactory {
-    event MarketCreated(uint256 id);
+    struct MarketParams {
+        string underlyingAssetName;
+        address coin;
+        uint256 duration;
+        address oracleAggregatorAddress;
+        IOracle.Type oracleType;
+        uint256 operatorFee;
+        uint256 serviceFee;
+    }
+
+    event MarketCreated(address);
+    event KeeperCreated(address);
+
+    function getOwner() external view returns (address);
 
     function setStorage(address storageAddress_) external;
 
     function setDeposit(address depositAddress_) external;
 
-    function createMarket(IMarketDeployer.Parameters memory params)
+    function createMarket(MarketParams memory params)
         external
         returns (address market);
 

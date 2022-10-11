@@ -8,20 +8,25 @@ import "./interfaces/IOracle.sol";
 import "./interfaces/IAmmDeployer.sol";
 import "./interfaces/IMarketDeployer.sol";
 
-import "./MarketDeployer.sol";
+import "./Keeper.sol";
 import "./AmmDeployer.sol";
 
-contract Factory is IFactory, Ownable {
+contract Factory is Ownable, IFactory {
     address[] public allMarkets;
     mapping(address => bool) markets;
 
     address[] public allAmms;
     mapping(address => bool) amms;
+    mapping(address => address) keepers;
 
     mapping(IOracle.Type => address) oracles;
 
     address public depositAddress;
     address public storageAddress;
+
+    function getOwner() external view returns (address) {
+        return owner();
+    }
 
     function setStorage(address storageAddress_) external onlyOwner {
         storageAddress = storageAddress_;
@@ -33,7 +38,7 @@ contract Factory is IFactory, Ownable {
 
     function getOracleAddress(IOracle.Type oracleType)
         external
-        onlyOwner
+        view
         returns (address)
     {
         return oracles[oracleType];
@@ -46,21 +51,46 @@ contract Factory is IFactory, Ownable {
         oracles[oracleType] = oracleAddress;
     }
 
-    function createMarket(IMarketDeployer.Parameters memory params)
+    function createMarket(MarketParams memory params)
         external
-        returns (address market)
+        returns (address marketAddress)
     {
-        params.factory = address(this);
-        params.deposit = depositAddress;
-        market = new MarketDeployer().deploy(params);
+        Keeper keeper;
 
-        allMarkets.push(market);
-        markets[market] = true;
+        if (keepers[msg.sender] == address(0)) {
+            keeper = new Keeper(msg.sender);
 
-        emit MarketCreated(allMarkets.length);
+            keepers[msg.sender] = address(keeper);
+
+            emit KeeperCreated(address(keeper));
+        } else keeper = Keeper(keepers[msg.sender]);
+
+        IMarketDeployer.Parameters memory parameters = IMarketDeployer
+            .Parameters({
+                factory: address(this),
+                deposit: depositAddress,
+                operator: msg.sender,
+                underlyingAssetName: params.underlyingAssetName,
+                coin: params.coin,
+                duration: params.duration,
+                oracleAggregatorAddress: params.oracleAggregatorAddress,
+                storageAddress: storageAddress,
+                oracleType: params.oracleType,
+                operatorFee: params.operatorFee,
+                serviceFee: params.serviceFee,
+                amm: address(0)
+            });
+
+        marketAddress = address(new Market(parameters));
+        keeper.addMarket(marketAddress);
+
+        allMarkets.push(marketAddress);
+        markets[marketAddress] = true;
+
+        emit MarketCreated(marketAddress);
     }
 
-     function createAmm(IAmmDeployer.Parameters memory params)
+    function createAmm(IAmmDeployer.Parameters memory params)
         external
         returns (address amm)
     {
@@ -69,7 +99,7 @@ contract Factory is IFactory, Ownable {
         allAmms.push(amm);
         amms[amm] = true;
 
-        emit MarketCreated(allAmms.length);
+        // emit MarketCreated(allAmms.length);
     }
 
     function allMarketsLength() external view returns (uint256) {
