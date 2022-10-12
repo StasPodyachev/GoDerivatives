@@ -19,7 +19,7 @@ contract Oracle is IOracle, Ownable {
         uint256 lPhase = l >> 64;
         uint256 rPhase = latestRoundId >> 64;
         
-        if (lPhase != rPhase) return 100000000;
+        if (lPhase != rPhase) return 1000000000000000000;
 
         uint256 h = latestRoundId + 1; // Not n - 1
 
@@ -34,11 +34,11 @@ contract Oracle is IOracle, Ownable {
             }
         }
 
-        if (l > latestRoundId) return uint256(latestAnswer);
+        if (l > latestRoundId) return uint256(latestAnswer)*10**10;
 
-        amount = uint256(aggregator.getAnswer(l));
+        amount = uint256(aggregator.getAnswer(l))*10**10;
 
-        if (amount == 0) return 500000000000;
+        if (amount == 0) return 5000000000000000000000;
     }
 
     function getLatest(address aggregatorAddress)
@@ -53,7 +53,7 @@ contract Oracle is IOracle, Ownable {
 
         require(answer >= 0, "Oracle: Answer require >= 0");
 
-        amount = uint256(answer);
+        amount = uint256(answer)*10**10;
         roundId = id;
     }
 }

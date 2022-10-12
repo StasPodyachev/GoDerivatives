@@ -41,7 +41,8 @@ const config = {
     },
   },
   abiExporter: {
-    path: "build/contracts",
+    path: "./data/abi",
+    runOnCompile: true,
     clear: false,
     flat: true,
     // only: [],
