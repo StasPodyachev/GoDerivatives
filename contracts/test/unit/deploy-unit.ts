@@ -15,19 +15,16 @@ import {
   // Market__factory,
   MockV3Aggregator,
   MockV3Aggregator__factory,
-  MarketDeployer,
-  MarketDeployer__factory,
   Oracle,
   Oracle__factory,
   SimpleToken,
   SimpleToken__factory,
   Storage,
   Storage__factory,
-  IOracle,
 } from "../../typechain";
 
-const DECIMALS = "18";
-const INITIAL_PRICE = ethers.utils.parseEther("80.53");
+const DECIMALS = "8";
+const INITIAL_PRICE = ethers.utils.parseUnits("80.53", DECIMALS);
 
 async function deployMockV3Aggregator(
   owner: SignerWithAddress
@@ -137,25 +134,10 @@ async function deployKeeper(owner: SignerWithAddress): Promise<Keeper> {
     "Keeper"
   )) as Keeper__factory;
   keeperFactory.connect(owner);
-  keeper = await keeperFactory.deploy();
+  keeper = await keeperFactory.deploy(owner.address);
   keeper.connect(owner);
 
   return keeper;
-}
-
-async function deployMarketDeployer(
-  owner: SignerWithAddress
-): Promise<MarketDeployer> {
-  let marketDeployer: MarketDeployer;
-  let marketDeployerFactory: MarketDeployer__factory;
-  marketDeployerFactory = (await ethers.getContractFactory(
-    "MarketDeployer"
-  )) as MarketDeployer__factory;
-  marketDeployerFactory.connect(owner);
-  marketDeployer = await marketDeployerFactory.deploy();
-  marketDeployer.connect(owner);
-
-  return marketDeployer;
 }
 
 async function deployDeposit(owner: SignerWithAddress): Promise<Deposit> {
@@ -193,7 +175,6 @@ export async function setup() {
   const storage = await deployStorage(owner);
   // const marketDeployer = await deployMarketDeployer(owner);
   const deposit = await deployDeposit(owner);
-  const keeper = await deployKeeper(owner);
 
   // set reference dependencies
   await factory.setDeposit(deposit.address);
@@ -203,35 +184,17 @@ export async function setup() {
 
   await deposit.setFactory(factory.address);
 
-  await keeper.setFactory(factory.address);
-  await keeper.setOperator(owner.address);
-
-  // set marketDeployer parameters
-  // let wtiMarketParameters = {
-  //   factory: factory.address,
-  //   deposit: deposit.address,
-  //   operator: owner.address,
-  //   underlyingAssetName: "WTI",
-  //   coin: testUSDC.address,
-  //   duration: 864000,
-  //   oracleAggregatorAddress: mockV3Aggregator.address,
-  //   storageAddress: storage.address,
-  //   oracleType: 0,
-  //   amm: ethers.constants.AddressZero,
-  //   operatorFee: ethers.utils.parseEther("0.03"),
-  //   serviceFee: ethers.utils.parseEther("0.03"),
-  // };
-
   // deploy WTI/USDC market
-  const wtiMarketCreateTx = await keeper.createMarket(
-    "WTI",
-    testUSDC.address,
-    86400,
-    mockV3Aggregator.address,
-    0,
-    ethers.utils.parseEther("0.03"),
-    ethers.utils.parseEther("0.03")
-  );
+  const wtiMarketCreateTx = await factory.createMarket({
+    underlyingAssetName: "WTI",
+    coin: testUSDC.address,
+    duration: 86400,
+    oracleAggregatorAddress: mockV3Aggregator.address,
+    oracleType: 0,
+    operatorFee: ethers.utils.parseEther("0.03"),
+    serviceFee: ethers.utils.parseEther("0.03"),
+  });
+
   await wtiMarketCreateTx.wait(1);
 
   const wtiMarketAddress = await factory.allMarkets(0);
@@ -251,7 +214,6 @@ export async function setup() {
     mockV3Aggregator,
     oracle,
     testUSDC,
-    keeper,
     wtiMarket,
   };
 }
