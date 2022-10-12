@@ -87,7 +87,7 @@ contract Factory is Ownable, IFactory {
         allMarkets.push(marketAddress);
         markets[marketAddress] = true;
 
-        emit MarketCreated(marketAddress);
+        emit MarketCreated({marketAddress: marketAddress, keeperAddress: address(keeper)});
     }
 
     function createAmm(IAmmDeployer.Parameters memory params)

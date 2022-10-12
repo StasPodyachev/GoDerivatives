@@ -1,0 +1,76 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Factory
+    network: baobab
+    source:
+      address: "0x951d2f7557d45f6e99ea016b00529AB8600D1f5E"
+      abi: Factory
+      startBlock: 28291697
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Deal
+      abis:
+        - name: Factory
+          file: ./abis/Factory.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: ERC20SymbolBytes
+          file: ./abis/ERC20SymbolBytes.json
+        - name: ERC20NameBytes
+          file: ./abis/ERC20NameBytes.json
+      eventHandlers:
+        - event: KeeperCreated(address)
+          handler: handleKeeperCreated
+        - event: MarketCreated(address,address)
+          handler: handleMarketCreated
+      file: ./src/mappings/factory.ts
+
+templates:
+  - kind: ethereum
+    name: Market
+    network: baobab
+    source:
+      abi: Market
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Deal
+      abis:
+        - name: Market
+          file: ./abis/Market.json
+      eventHandlers:
+        - event: DealAccepted(uint256)
+          handler: handleDealAccepted
+        - event: DealCanceled(uint256)
+          handler: handleDealCanceled
+        - event: DealCompleted(uint256)
+          handler: handleDealCompleted
+        - event: DealCreated(uint256)
+          handler: handleDealCreated
+        - event: DealExpired(uint256)
+          handler: handleDealExpired
+      file: ./src/mappings/market.ts
+  
+  - kind: ethereum
+    name: Keeper
+    network: baobab
+    source:
+      abi: Keeper
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Keeper
+      abis:
+        - name: Keeper
+          file: ./abis/Keeper.json
+      file: ./src/mappings/keeper.ts

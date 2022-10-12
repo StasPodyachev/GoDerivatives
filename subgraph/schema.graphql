@@ -1,0 +1,75 @@
+enum DealStatus {
+  CREATED,
+  ACCEPTED,
+  COMPLETED,
+  CANCELED,
+  EXPIRED
+}
+
+type Deal @entity {
+  id: ID!
+  maker: Bytes!
+  buyer: Bytes!
+  seller: Bytes!
+  rate: BigInt!
+  rateMaker: BigInt!
+  count: BigInt!
+  percent: BigInt!
+  periodOrderExpiration: BigInt!
+  slippageMaker: BigInt!
+  slippageTaker: BigInt!
+  collateralAmountMaker: BigInt!
+  collateralAmountBuyer: BigInt!
+  collateralAmountSeller: BigInt!
+  dateOrderCreation: BigInt!
+  dateStart: BigInt!
+  dateStop: BigInt!
+  oracleAmount: BigInt!
+  oracleRoundIDStart: BigInt!
+  buyerTokenId: BigInt!
+  sellerTokenId: BigInt!
+  status: BigInt!
+}
+
+type Market @entity {
+  id: ID!
+  name: String!
+  coin: Bytes!
+  underlyingAssetName: String!
+  amm: Bytes
+  duration: BigInt!
+  oracleAggregatorAddress: Bytes!
+  operatorFee: BigInt!
+  serviceFee: BigInt!
+  operator: Bytes!
+  oracleType: BigInt!
+  keeper: Keeper!
+}
+
+type History @entity {
+  id: ID!
+  recipient: Bytes!
+  contract: Bytes!
+  amount: BigInt!
+  type: BigInt!
+}
+
+type Amm @entity {
+  id: ID!
+  freeze: Boolean!
+  reserve0: BigInt!
+  reserve1: BigInt!
+  coin: BigInt! # address(0) == ETH
+}
+
+type Oracle @entity {
+  id: ID!
+  name: String!
+  type: BigInt!
+}
+
+type Keeper @entity {
+  id: ID!
+  operator: Bytes!
+  markets: [Market!]! @derivedFrom(field: "keeper")
+}

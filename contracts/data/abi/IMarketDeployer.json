@@ -1,0 +1,77 @@
+[
+  {
+    "inputs": [],
+    "name": "parameters",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "factory",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "deposit",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "underlyingAssetName",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "coin",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "duration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleAggregatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "storageAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "enum IOracle.Type",
+            "name": "oracleType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "amm",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "operatorFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "serviceFee",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IMarketDeployer.Parameters",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

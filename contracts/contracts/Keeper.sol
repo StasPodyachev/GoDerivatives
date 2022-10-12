@@ -10,8 +10,8 @@ import "./interfaces/IOracle.sol";
 import "./Market.sol";
 
 contract Keeper is IKeeper, Ownable {
-    mapping(address => bool) markets;
-    address operator;
+    mapping(address => bool) public markets;
+    address public operator;
 
     IFactory factory;
     IDeposit deposit;

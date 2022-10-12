@@ -1,0 +1,22 @@
+[
+  {
+    "inputs": [],
+    "name": "parameters",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IAmmDeployer.Parameters",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
