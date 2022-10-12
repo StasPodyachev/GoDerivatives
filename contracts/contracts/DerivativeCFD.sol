@@ -124,7 +124,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         ); // 1e8
 
         uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
-            1e26;
+            1e36;
 
         deal.slippageTaker =
             (deal.count * rateTaker * deal.percent * slippageTaker) /
@@ -235,7 +235,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             oracleAggregatorAddress,
             deal.dateStop,
             deal.oracleRoundIDStart
-        ) * 1e10;
+        );
 
         require(
             oracleAmount > 0,
