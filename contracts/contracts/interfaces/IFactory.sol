@@ -14,8 +14,8 @@ interface IFactory {
         uint256 serviceFee;
     }
 
-    event MarketCreated(address);
-    event KeeperCreated(address);
+    event MarketCreated(address marketAddress, address keeperAddress);
+    event KeeperCreated(address keeperAddress);
 
     function getOwner() external view returns (address);
 
