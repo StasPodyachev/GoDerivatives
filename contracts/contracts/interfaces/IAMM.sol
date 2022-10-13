@@ -5,7 +5,9 @@ interface IAMM {
     function takeDeal(
         address market,
         uint256 dealId,
-        uint256 amount,
+        uint256 rateTaker,
+        uint256 slippageTaker,
+        uint amount,
         address coin
     ) external;
 }

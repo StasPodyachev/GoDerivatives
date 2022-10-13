@@ -7,6 +7,9 @@ import "./interfaces/IFactory.sol";
 
 contract Market is DerivativeCFD {
     constructor(IMarketDeployer.Parameters memory params) {
+
+        // TODO: maybe need required and security
+
         factory = params.factory;
         deposit = IDeposit(params.deposit);
         coin = params.coin;
@@ -15,10 +18,13 @@ contract Market is DerivativeCFD {
         oracleAggregatorAddress = params.oracleAggregatorAddress;
         oracleType = params.oracleType;
         storage_ = IStorage(params.storageAddress);
-        amm = IAMM(params.amm);
         operatorFee_ = params.operatorFee;
         serviceFee_ = params.serviceFee;
         operator = params.operator;
+
+        if(params.amm!=address(0)){
+            amm = IAMM(params.amm);
+        }
 
         address oracleAddress = IFactory(factory).getOracleAddress(oracleType);
         oracle = IOracle(oracleAddress);

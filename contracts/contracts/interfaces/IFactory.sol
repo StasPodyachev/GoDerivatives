@@ -16,6 +16,7 @@ interface IFactory {
 
     event MarketCreated(address marketAddress, address keeperAddress);
     event KeeperCreated(address keeperAddress);
+    event AmmCreated(address amm);
 
     function getOwner() external view returns (address);
 

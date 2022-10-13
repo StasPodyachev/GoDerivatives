@@ -1,6 +1,7 @@
 pragma solidity =0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 
 import "./interfaces/IAmmDeployer.sol";
 import "./interfaces/IMarketDeployer.sol";
@@ -78,24 +79,27 @@ contract Keeper is IKeeper, Ownable {
         address coin,
         uint256 amount
     ) external payable onlyOperator {
+        
+        require(markets[market]!=false, "Keeper: Access error for market");
+        
         bool isToken = coin != address(0);
 
         if (isToken) {
-            require(amount > 0, "");
+            require(amount > 0, "Keeper: Incorrect amount token");
         } else {
-            require(msg.value == amount, "");
+            require(msg.value == amount, "Keeper: Incorrect amount coin");
         }
 
         IAmmDeployer.Parameters memory parameters = IAmmDeployer.Parameters({
             name: name
         });
 
-        if (isToken) {}
-
         address ammAddress = factory.createAmm(parameters);
 
-        if (market != address(0)) {
-            // set amm
+        if (isToken) {
+            TransferHelper.safeTransfer(coin, ammAddress, amount);
+        }else{
+            payable(ammAddress).transfer(msg.value);
         }
     }
 

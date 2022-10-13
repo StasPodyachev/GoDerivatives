@@ -102,7 +102,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit DealCreated(dealId);
 
         if (address(amm) != address(0)) {
-            amm.takeDeal(address(this), dealId, collateralAmountMaker, coin);
+            amm.takeDeal(address(this), dealId, params.rate, slippage, collateralAmountMaker, coin);
         }
     }
 

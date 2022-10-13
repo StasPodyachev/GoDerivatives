@@ -9,7 +9,8 @@ import "./interfaces/IAmmDeployer.sol";
 import "./interfaces/IMarketDeployer.sol";
 
 import "./Keeper.sol";
-import "./AmmDeployer.sol";
+import "./TestAMM.sol";
+
 
 contract Factory is Ownable, IFactory {
     address[] public allMarkets;
@@ -94,12 +95,12 @@ contract Factory is Ownable, IFactory {
         external
         returns (address amm)
     {
-        amm = new AmmDeployer().deploy(params);
+        amm = address(new TestAMM(params));
 
         allAmms.push(amm);
         amms[amm] = true;
 
-        // emit MarketCreated(allAmms.length);
+        emit AmmCreated(amm);
     }
 
     function allMarketsLength() external view returns (uint256) {
