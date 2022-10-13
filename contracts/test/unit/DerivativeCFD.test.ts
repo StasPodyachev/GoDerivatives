@@ -46,6 +46,8 @@ const dealParams = {
   slippage: ethers.utils.parseEther("0.02"),
 };
 
+const correctCollateral = ethers.utils.parseEther("0.16116");
+
 let dealId: BigNumberish;
 
 !developmentChains.includes(network.name)
@@ -74,7 +76,6 @@ let dealId: BigNumberish;
         });
 
         it("calculates collateralAmountMaker correctly", async () => {
-          const correctCollateral = ethers.utils.parseEther("8.20590");
           await expect(
             wtiMarketMaker.callStatic.createDeal(dealParams, {
               value: correctCollateral,
@@ -96,8 +97,6 @@ let dealId: BigNumberish;
         });
 
         it("subtracts deposit correctly when passing collateral explicitly", async () => {
-          const correctCollateral = ethers.utils.parseEther("8.20590");
-
           const makerETHBalanceBefore = await maker.getBalance();
 
           const dealTx = await wtiMarketMaker.createDeal(dealParams, {
@@ -129,7 +128,6 @@ let dealId: BigNumberish;
         });
 
         it("subtracts deposit correctly when passing collateral implicitly", async () => {
-          const correctCollateral = ethers.utils.parseEther("8.20590");
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
           // const makerDepositBefore = await deposit.balances(
           //   maker.address,
@@ -163,7 +161,6 @@ let dealId: BigNumberish;
         });
 
         it("emits DealCreated event correctly when creating deal", async () => {
-          const correctCollateral = ethers.utils.parseEther("8.20590");
           const approveTx = await testUSDCMaker.approve(
             deposit.address,
             correctCollateral
@@ -185,7 +182,6 @@ let dealId: BigNumberish;
           wtiMarketTaker = wtiMarket.connect(taker);
           testUSDCTaker = testUSDC.connect(taker);
 
-          const correctCollateral = ethers.utils.parseEther("8.20590");
           const approveMakerTx = await testUSDCMaker.approve(
             deposit.address,
             correctCollateral
@@ -286,19 +282,21 @@ let dealId: BigNumberish;
         // });
 
         it("doesn't revert when rateOracle fits makers or takers requirements", async () => {
-          await wtiMarketTaker.callStatic.takeDeal(
-            dealId,
-            ethers.utils.parseEther("1.5710"),
-            ethers.utils.parseEther("0.02")
-          );
+          // const takeDealTx = await wtiMarketTaker.takeDeal(
+          //   dealId,
+          //   ethers.utils.parseEther("1.5710"),
+          //   ethers.utils.parseEther("0.02")
+          // );
 
-          // await expect(
-          //   wtiMarketTaker.callStatic.takeDeal(
-          //     dealId,
-          //     ethers.utils.parseEther("1.5710"),
-          //     ethers.utils.parseEther("0.02")
-          //   )
-          // ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+          // await takeDealTx.wait();
+
+          await expect(
+            wtiMarketTaker.callStatic.takeDeal(
+              dealId,
+              ethers.utils.parseEther("1.5710"),
+              ethers.utils.parseEther("0.02")
+            )
+          ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
         });
 
         it("makes refund to maker correctly", async () => {
@@ -308,7 +306,7 @@ let dealId: BigNumberish;
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("80.64"),
+            ethers.utils.parseEther("1.5710"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
@@ -328,7 +326,7 @@ let dealId: BigNumberish;
         it("mints NFT and assigns ownership to buyer and seller correctly", async () => {
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("80.64"),
+            ethers.utils.parseEther("1.5710"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
