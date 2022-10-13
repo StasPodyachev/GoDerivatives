@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 import fs from "fs";
 import { IDeployment, recordAllDeployments } from "../tasks/utils";
-import deployment from "../deployment/deployments.json";
+import deployment from "../data/deployments.json";
 import { deployNames } from "../tasks/constants";
 
 const deployments: IDeployment = deployment;
@@ -82,7 +82,7 @@ const contractDeploy = async (contractName: any, nameFile: any, args: any) => {
         contract.address
     );
     fs.writeFileSync(
-        "./deployment/deployments.json",
+        "./data/deployments.json",
         JSON.stringify(writeData)
     );
 }

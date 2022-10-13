@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 import fs from "fs";
 import { IDeployment, recordAllDeployments } from "../tasks/utils";
-import deployment from "../deployment/deployments.json";
+import deployment from "../data/deployments.json";
 
 import { deployNames } from "../tasks/constants";
 import { Deposit, Factory, Keeper, Storage } from "../typechain";
@@ -47,6 +47,7 @@ async function factory() {
     const depositDeployed = deployments[network][deployNames.DEPOSIT];
     const storageDeployed = deployments[network][deployNames.STORAGE];
     const tUsdDeployed = deployments[network][deployNames.T_USD];
+    const oracleDeployed = deployments[network][deployNames.ORACLE];
 
     const factory = await hre.ethers.getContractAt(
         deployNames.FACTORY,
@@ -58,6 +59,8 @@ async function factory() {
 
     tx = await factory.setDeposit(depositDeployed.address);
     await tx.wait()
+
+    await factory.addOracleAddress(oracleDeployed.address, 0) // Chainlink wrapper
 
     tx = await factory.createMarket({
         coin: tUsdDeployed.address,
@@ -88,7 +91,7 @@ async function factory() {
             ev.args ? ev.args[0] : ""
         );
         fs.writeFileSync(
-            "./deployment/deployments.json",
+            "./data/deployments.json",
             JSON.stringify(writeData)
         );
     }

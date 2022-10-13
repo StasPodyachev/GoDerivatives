@@ -59,7 +59,7 @@ export function handleMarketCreated(event: MarketCreatedEvent): void {
   entity.keeper = event.params.keeperAddress.toHex()
 
   let markets = keeperEntity.markets
-  markets?.push(event.params.marketAddress.toHex())
+  markets.push(event.params.marketAddress.toHex())
   keeperEntity.markets = markets;
   
   entity.save()

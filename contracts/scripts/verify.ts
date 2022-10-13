@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 
 import { IDeployment } from "../tasks/utils";
-import deployment from "../deployment/deployments.json";
+import deployment from "../data/deployments.json";
 
 const deployments: IDeployment = deployment;
 

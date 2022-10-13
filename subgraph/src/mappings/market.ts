@@ -35,7 +35,7 @@ export function handleDealCreated(event: DealAccepted): void {
   entity.oracleRoundIDStart = deal.oracleRoundIDStart
   entity.buyerTokenId = deal.buyerTokenId
   entity.sellerTokenId = deal.sellerTokenId
-  entity.status = deal.status
+  entity.status =  BigInt.fromI32(deal.status)
 
   entity.save()
 }
@@ -43,22 +43,16 @@ export function handleDealCreated(event: DealAccepted): void {
 export function handleDealCanceled(event: DealAccepted): void {
   let id: string = event.params.dealId.toHex()
 
-  let marketContract: MarketContract = MarketContract.bind(
-    event.address
-  );
-
-  let entity: Deal = Deal.load(id)
+  let entity: Deal | null = Deal.load(id)
   if(!entity) return
 
-  let deal = marketContract.getDeal(event.params.dealId)
-
-  entity.status = deal.status
+  entity.status = BigInt.fromI32(DealStatus.CANCELED)
   entity.save()
 }
 
 export function handleDealCompleted(event: DealAccepted): void {
   let id: string = event.params.dealId.toHex()
-  let entity: Deal = Deal.load(id)
+  let entity: Deal | null = Deal.load(id)
   if(!entity) return
 
   entity.status = BigInt.fromI32(DealStatus.COMPLETED)
@@ -72,7 +66,7 @@ export function handleDealAccepted(event: DealAccepted): void {
     event.address
   );
 
-  let entity: Deal = Deal.load(id)
+  let entity: Deal | null = Deal.load(id)
   if(!entity) return
 
   let deal = marketContract.getDeal(event.params.dealId)
@@ -86,13 +80,13 @@ export function handleDealAccepted(event: DealAccepted): void {
   entity.buyerTokenId = deal.buyerTokenId
   entity.sellerTokenId = deal.sellerTokenId
   entity.oracleAmount = deal.oracleAmount
-  entity.status = deal.status
+  entity.status = BigInt.fromI32(deal.status)
   entity.save()
 }
 
 export function handleDealExpired(event: DealAccepted): void {
   let id: string = event.params.dealId.toHex()
-  let entity: Deal = Deal.load(id)
+  let entity: Deal | null = Deal.load(id)
   if(!entity) return
 
   entity.status = BigInt.fromI32(DealStatus.EXPIRED)

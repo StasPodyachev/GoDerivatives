@@ -6,6 +6,9 @@ import "base64-sol/base64.sol";
 contract DealNFT is ERC1155 {
     using Strings for uint256;
 
+    uint constant DECIMAL = 18;
+    uint public constant ONE = 10 ** DECIMAL;
+
     struct MintParams {
         uint256 dealId;
         uint256 deadline;
@@ -48,9 +51,7 @@ contract DealNFT is ERC1155 {
         checkDeadline(params.deadline)
         returns (uint256 tokenId)
     {
-        bytes memory tmp; //
-
-        _mint(params.recipient, (tokenId = _nextId++), params.amount, tmp);
+        _mint(params.recipient, (tokenId = _nextId++), ONE, "");
 
         _deals[tokenId] = Deal({
             id: params.dealId,
@@ -67,13 +68,16 @@ contract DealNFT is ERC1155 {
     function getHolders(uint256 tokenId)
         external
         view
-        returns (address[] memory holders_)
+        returns (address[] memory holders_, uint[] memory balances)
     {
+
         address[] memory holders = _holders[tokenId];
         uint256 index = 0;
         for (uint256 i = 0; i < holders.length; i++) {
-            if (balanceOf(holders[i], tokenId) > 0)
+            balances[index] = balanceOf(holders[i], tokenId);
+            if (balances[index] > 0){
                 holders_[index++] = holders[i];
+            }
         }
     }
 
@@ -94,7 +98,9 @@ contract DealNFT is ERC1155 {
     ) internal override {
         if (from == address(0) || to == address(0)) return;
 
-        _holders[ids[0]].push(to);
+        for(uint i=0; i<ids.length; i++){
+            _holders[ids[i]].push(to);
+        }
     }
 
     function uri(uint256 id) public pure override returns (string memory) {

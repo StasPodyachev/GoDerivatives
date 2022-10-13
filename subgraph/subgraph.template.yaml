@@ -24,6 +24,10 @@ dataSources:
           file: ./abis/ERC20SymbolBytes.json
         - name: ERC20NameBytes
           file: ./abis/ERC20NameBytes.json
+        - name: Keeper
+          file: ./abis/Keeper.json
+        - name: Market
+          file: ./abis/Market.json
       eventHandlers:
         - event: KeeperCreated(address)
           handler: handleKeeperCreated
