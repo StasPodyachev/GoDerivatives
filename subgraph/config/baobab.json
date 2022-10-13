@@ -1,7 +1,7 @@
 {
   "network": "baobab",
   "start_block": 104075490,
-  "factory_address": "0x01f6898EFB1fC1eA8FA7FC66D0202DC0133ed69f",
-  "deposit_address": "0xE6f904FDd385bD9dca5DCF05578D97d4Fa91dBB9",
+  "factory_address": "0x367a9cd8e2E843026DFb6f45538913CEC150219C",
+  "deposit_address": "0x5709Fb26D6BD1932474d1812c77B6DA929C26267",
   "weth_address": "0x4200000000000000000000000000000000000006"
 }
