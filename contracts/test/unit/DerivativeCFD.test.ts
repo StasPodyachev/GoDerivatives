@@ -46,7 +46,7 @@ const dealParams = {
   slippage: ethers.utils.parseEther("0.02"),
 };
 
-const correctCollateral = ethers.utils.parseEther("1.6575");
+const correctCollateral = ethers.utils.parseEther("0.16575");
 
 let dealId: BigNumberish;
 
