@@ -376,10 +376,8 @@ let dealId: BigNumberish;
 
         it("cancels expired deal and sets status to expired", async () => {
           // simulating getting blockchain time on expiration date
-          console.log("CANCEL TEST");
           let dealParams = await wtiMarketMaker.getDeal(dealId);
           const expiration = dealParams.periodOrderExpiration.toNumber();
-          console.log(expiration.toString());
           await network.provider.send("evm_increaseTime", [expiration + 1]);
           await network.provider.request({ method: "evm_mine", params: [] });
           await wtiMarketMaker.processing(dealId);
@@ -387,6 +385,60 @@ let dealId: BigNumberish;
           dealParams = await wtiMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
           assert.equal(dealStatus, 4);
+        });
+
+        it("test for untaken unexpired deal", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("test for untaken unexpired deal");
+          let dealParams = await wtiMarketMaker.getDeal(dealId);
+
+          await wtiMarketMaker.processing(dealId);
+
+          dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
+        });
+
+        it("test for taken unexpired deal", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("test for taken unexpired deal");
+          let dealParams = await wtiMarketMaker.getDeal(dealId);
+
+          const takeDealTx = await wtiMarketTaker.takeDeal(
+            dealId,
+            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("0.02")
+          );
+          await takeDealTx.wait();
+
+          await wtiMarketMaker.processing(dealId);
+
+          dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
+        });
+
+        it("test for taken expired deal", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("test for taken expired deal");
+          let dealParams = await wtiMarketMaker.getDeal(dealId);
+
+          const takeDealTx = await wtiMarketTaker.takeDeal(
+            dealId,
+            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("0.02")
+          );
+          await takeDealTx.wait();
+
+          const expiration = dealParams.periodOrderExpiration.toNumber();
+          await network.provider.send("evm_increaseTime", [expiration + 1]);
+          await network.provider.request({ method: "evm_mine", params: [] });
+
+          await wtiMarketMaker.processing(dealId);
+
+          dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
         });
       });
     });
