@@ -3,6 +3,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "base64-sol/base64.sol";
 
+import "hardhat/console.sol";
+
 contract DealNFT is ERC1155 {
     using Strings for uint256;
 
@@ -68,17 +70,9 @@ contract DealNFT is ERC1155 {
     function getHolders(uint256 tokenId)
         external
         view
-        returns (address[] memory holders_, uint[] memory balances)
+        returns (address[] memory holders)
     {
-
-        address[] memory holders = _holders[tokenId];
-        uint256 index = 0;
-        for (uint256 i = 0; i < holders.length; i++) {
-            balances[index] = balanceOf(holders[i], tokenId);
-            if (balances[index] > 0){
-                holders_[index++] = holders[i];
-            }
-        }
+        holders = _holders[tokenId];
     }
 
     function burn(address from, uint256 id) external {

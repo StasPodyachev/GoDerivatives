@@ -27,7 +27,6 @@ interface IDerivativeCFD {
         uint256 dateOrderExpiration;
         uint256 dateStart;
         uint256 dateStop;
-        uint256 oracleAmount;
         uint256 oracleRoundIDStart;
         uint256 buyerTokenId;
         uint256 sellerTokenId;
