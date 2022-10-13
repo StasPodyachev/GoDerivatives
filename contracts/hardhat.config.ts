@@ -26,12 +26,7 @@ const config = {
         interval: 100,
       },
     },
-    "optimistic-kovan": {
-      url: `https://opt-kovan.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
-      chainId: 69,
-      accounts: [process.env.DEPLOY_PRIVATE_KEY],
-    },
-    "klay-cn": {
+    "baobab": {
       url: process.env.KLAY_RPC_URL,
       chainId: 1001,
       accounts: [

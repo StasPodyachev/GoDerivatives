@@ -34,9 +34,9 @@ contract Oracle is IOracle, Ownable {
             }
         }
 
-        if (l > latestRoundId) return uint256(latestAnswer)*10**10;
+        if (l > latestRoundId) return uint256(latestAnswer);
 
-        amount = uint256(aggregator.getAnswer(l))*10**10;
+        amount = uint256(aggregator.getAnswer(l));
 
         if (amount == 0) return 5000000000000000000000;
     }
@@ -53,7 +53,7 @@ contract Oracle is IOracle, Ownable {
 
         require(answer >= 0, "Oracle: Answer require >= 0");
 
-        amount = uint256(answer)*10**10;
+        amount = uint256(answer);
         roundId = id;
     }
 }

@@ -1,114 +1,74 @@
 {
-    "1001": {
-        "Factory": {
-            "proxy": "",
-            "implementation": [
-                "0x8B19469C68457138c4ff64c50D54e963aa63DFA2"
-            ],
-            "address": "0x8B19469C68457138c4ff64c50D54e963aa63DFA2",
-            "creationTime": 1665486266252,
-            "updatedTime": [
-                1665486266252
-            ]
-        },
-        "Deposit": {
-            "proxy": "",
-            "implementation": [
-                "0xADDF32D8321088a327138583D6e5352562a91EEb"
-            ],
-            "address": "0xADDF32D8321088a327138583D6e5352562a91EEb",
-            "creationTime": 1665486268289,
-            "updatedTime": [
-                1665486268289
-            ]
-        },
-        "DealNFT": {
-            "proxy": "",
-            "implementation": [
-                "0xD13020a32eFEc492d021754E1582DFff545A3DA0"
-            ],
-            "address": "0xD13020a32eFEc492d021754E1582DFff545A3DA0",
-            "creationTime": 1665486270693,
-            "updatedTime": [
-                1665486270693
-            ]
-        },
-        "Oracle": {
-            "proxy": "",
-            "implementation": [
-                "0x6fdad84D1d89156D4c5c247f93276Bf5adc56c19"
-            ],
-            "address": "0x6fdad84D1d89156D4c5c247f93276Bf5adc56c19",
-            "creationTime": 1665486272751,
-            "updatedTime": [
-                1665486272751
-            ]
-        },
-        "Storage": {
-            "proxy": "",
-            "implementation": [
-                "0x3fF4d8b4B08edd58F42fe8Ffc5DfBD3828840604"
-            ],
-            "address": "0x3fF4d8b4B08edd58F42fe8Ffc5DfBD3828840604",
-            "creationTime": 1665486275111,
-            "updatedTime": [
-                1665486275111
-            ]
-        },
-        "TestAMM": {
-            "proxy": "",
-            "implementation": [
-                "0x21959C34B02ddef0cE4b129431e3ff638f166035"
-            ],
-            "address": "0x21959C34B02ddef0cE4b129431e3ff638f166035",
-            "creationTime": 1665486277160,
-            "updatedTime": [
-                1665486277160
-            ]
-        },
-        "tUSD": {
-            "proxy": "",
-            "implementation": [
-                "0xCcB9FcfA95f6E2A53d49CFd01D9DFa4ECe0Bab9C"
-            ],
-            "address": "0xCcB9FcfA95f6E2A53d49CFd01D9DFa4ECe0Bab9C",
-            "creationTime": 1665486279189,
-            "updatedTime": [
-                1665486279189
-            ]
-        },
-        "tEUR": {
-            "proxy": "",
-            "implementation": [
-                "0xf71C2c3178B1186419b21Ae4dfCB03D484Cd521c"
-            ],
-            "address": "0xf71C2c3178B1186419b21Ae4dfCB03D484Cd521c",
-            "creationTime": 1665486281196,
-            "updatedTime": [
-                1665486281196
-            ]
-        },
-        "Keeper": {
-            "proxy": "",
-            "implementation": [
-                "0xEAf33CC272F296a714381392030f56B71cFaA005"
-            ],
-            "address": "0xEAf33CC272F296a714381392030f56B71cFaA005",
-            "creationTime": 1665486309875,
-            "updatedTime": [
-                1665486309875
-            ]
-        },
-        "Market": {
-            "proxy": "",
-            "implementation": [
-                "0xfFc90278C9F692F9c0D56F0DEcf308030A8774b0"
-            ],
-            "address": "0xfFc90278C9F692F9c0D56F0DEcf308030A8774b0",
-            "creationTime": 1665486309875,
-            "updatedTime": [
-                1665486309875
-            ]
-        }
+  "1001": {
+    "Factory": {
+      "proxy": "",
+      "implementation": ["0x01f6898EFB1fC1eA8FA7FC66D0202DC0133ed69f"],
+      "address": "0x01f6898EFB1fC1eA8FA7FC66D0202DC0133ed69f",
+      "creationTime": 1665654993797,
+      "updatedTime": [1665654993797]
+    },
+    "Deposit": {
+      "proxy": "",
+      "implementation": ["0xE6f904FDd385bD9dca5DCF05578D97d4Fa91dBB9"],
+      "address": "0xE6f904FDd385bD9dca5DCF05578D97d4Fa91dBB9",
+      "creationTime": 1665654996375,
+      "updatedTime": [1665654996375]
+    },
+    "DealNFT": {
+      "proxy": "",
+      "implementation": ["0x09897Bb730e5C89C78c5259D7682fDDdd981db34"],
+      "address": "0x09897Bb730e5C89C78c5259D7682fDDdd981db34",
+      "creationTime": 1665644183482,
+      "updatedTime": [1665644183482]
+    },
+    "Oracle": {
+      "proxy": "",
+      "implementation": ["0x60f8957da78C5DB51Cdc83B6Ba96b66bEc8242F5"],
+      "address": "0x60f8957da78C5DB51Cdc83B6Ba96b66bEc8242F5",
+      "creationTime": 1665654998880,
+      "updatedTime": [1665654998880]
+    },
+    "Storage": {
+      "proxy": "",
+      "implementation": ["0xa597E95ad74f27C772400015e3ab03bBeFC98F46"],
+      "address": "0xa597E95ad74f27C772400015e3ab03bBeFC98F46",
+      "creationTime": 1665655001760,
+      "updatedTime": [1665655001760]
+    },
+    "TestAMM": {
+      "proxy": "",
+      "implementation": ["0x21959C34B02ddef0cE4b129431e3ff638f166035"],
+      "address": "0x21959C34B02ddef0cE4b129431e3ff638f166035",
+      "creationTime": 1665486277160,
+      "updatedTime": [1665486277160]
+    },
+    "tUSD": {
+      "proxy": "",
+      "implementation": ["0xCcB9FcfA95f6E2A53d49CFd01D9DFa4ECe0Bab9C"],
+      "address": "0xCcB9FcfA95f6E2A53d49CFd01D9DFa4ECe0Bab9C",
+      "creationTime": 1665486279189,
+      "updatedTime": [1665486279189]
+    },
+    "tEUR": {
+      "proxy": "",
+      "implementation": ["0xf71C2c3178B1186419b21Ae4dfCB03D484Cd521c"],
+      "address": "0xf71C2c3178B1186419b21Ae4dfCB03D484Cd521c",
+      "creationTime": 1665486281196,
+      "updatedTime": [1665486281196]
+    },
+    "Keeper": {
+      "proxy": "",
+      "implementation": ["0x444416BAA4cbc70a3D79AdfE09C19bb4a7fe7cdF"],
+      "address": "0x444416BAA4cbc70a3D79AdfE09C19bb4a7fe7cdF",
+      "creationTime": 1665655187539,
+      "updatedTime": [1665655187539]
+    },
+    "Market": {
+      "proxy": "",
+      "implementation": ["0x4fE3C2Ae4F9f627C2672c214cd7D132035E0a8BC"],
+      "address": "0x4fE3C2Ae4F9f627C2672c214cd7D132035E0a8BC",
+      "creationTime": 1665655187540,
+      "updatedTime": [1665655187540]
     }
+  }
 }

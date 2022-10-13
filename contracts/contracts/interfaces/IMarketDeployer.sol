@@ -12,6 +12,7 @@ interface IMarketDeployer {
         uint256 duration;
         address oracleAggregatorAddress;
         address storageAddress;
+        address nft;
         IOracle.Type oracleType;
         address amm;
         uint256 operatorFee;

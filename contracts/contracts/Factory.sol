@@ -71,6 +71,7 @@ contract Factory is Ownable, IFactory {
                 factory: address(this),
                 deposit: depositAddress,
                 operator: msg.sender,
+                nft: params.nft,
                 underlyingAssetName: params.underlyingAssetName,
                 coin: params.coin,
                 duration: params.duration,
