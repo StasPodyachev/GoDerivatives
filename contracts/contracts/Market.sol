@@ -21,6 +21,7 @@ contract Market is DerivativeCFD {
         operatorFee_ = params.operatorFee;
         serviceFee_ = params.serviceFee;
         operator = params.operator;
+        nft = DealNFT(params.nft);
 
         if(params.amm!=address(0)){
             amm = IAMM(params.amm);

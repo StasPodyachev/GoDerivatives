@@ -91,13 +91,13 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             sellerTokenId: 0,
             status: DealStatus.CREATED
         });
-
+        
+        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg.sender;
+        
         uint256 dealId = storage_.addDealId();
-
+        
         deals[dealId] = deal;
 
-        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg
-            .sender;
 
         emit DealCreated(dealId);
 
@@ -122,11 +122,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
-        ); // 1e18
-        // 100000000000000000
-        // 1000000000000000000
-
-        // 15633992936000000000000000000
+        );
 
         uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
             1e36;
@@ -146,7 +142,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Insufficient amount of deposit for the deal"
         );
 
-       require(
+        require(
             (rateOracle  > (deal.rateMaker - deal.rateMaker * deal.slippageMaker / 1e18)) &&
             (rateOracle <= (deal.rateMaker + deal.rateMaker * deal.slippageMaker / 1e18)) &&
             (rateOracle  > (rateTaker - rateTaker * slippageTaker / 1e18)) &&
@@ -174,8 +170,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.dateStop = deal.dateStart + duration;
         deal.status = DealStatus.ACCEPTED;
 
-        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg
-            .sender;
+        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg.sender;
 
         DealNFT.MintParams memory mintParams = DealNFT.MintParams({
             dealId: dealId,
@@ -186,6 +181,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             buyer: deal.buyer,
             seller: deal.seller
         });
+
 
         deal.buyerTokenId = nft.mint(mintParams);
         mintParams.recipient = deal.seller;
