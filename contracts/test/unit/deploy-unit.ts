@@ -26,7 +26,7 @@ import {
 } from "../../typechain";
 
 const DECIMALS = "18";
-const INITIAL_PRICE = ethers.utils.parseUnits("1.57", DECIMALS);
+const INITIAL_PRICE = ethers.utils.parseUnits("1.6293", DECIMALS);
 
 async function deployMockV3Aggregator(
   owner: SignerWithAddress
