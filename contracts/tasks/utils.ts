@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import deployment from "../deployment/deployments.json";
+import deployment from "../data/deployments.json";
 // import { BridgeUpgradeable } from "../typechain";
 import { BigNumber } from "ethers";
 

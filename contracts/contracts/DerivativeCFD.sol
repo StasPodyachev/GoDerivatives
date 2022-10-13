@@ -102,7 +102,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit DealCreated(dealId);
 
         if (address(amm) != address(0)) {
-            amm.takeDeal(address(this), dealId, collateralAmountMaker, coin);
+            amm.takeDeal(address(this), dealId, params.rate, slippage, collateralAmountMaker, coin);
         }
     }
 
@@ -266,6 +266,9 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         uint256 operatorFee;
         uint256 serviceFee;
+        (address[] memory nftHolders, uint[] memory nftBalances) = nft.getHolders(deal.buyerTokenId);
+
+        uint ONE = nft.ONE();
 
         if (payoutBuyer > 0) {
             if (payoutBuyer > deal.collateralAmountBuyer) {
@@ -282,13 +285,17 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 payoutBuyer -= serviceFee;
             }
 
-            deposit.refund(
-                deal.buyer,
-                coin,
-                payoutBuyer,
-                operatorFee + serviceFee
-            );
+            for(uint i=0; i<nftHolders.length; i++){
+                deposit.refund(
+                    nftHolders[i],
+                    coin,
+                    payoutBuyer * nftBalances[i] / ONE,
+                    operatorFee + serviceFee
+                );
+            }
         }
+
+        (nftHolders, nftBalances) = nft.getHolders(deal.sellerTokenId);
 
         if (payoutSeller > 0) {
             if (payoutSeller > deal.collateralAmountSeller) {
@@ -306,18 +313,22 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 payoutSeller -= serviceFee;
             }
 
-            deposit.refund(
-                deal.seller,
-                coin,
-                payoutSeller,
-                operatorFee + serviceFee
-            );
+            for(uint i=0; i<nftHolders.length; i++){
+                deposit.refund(
+                    nftHolders[i],
+                    coin,
+                    payoutSeller * nftBalances[i] / ONE,
+                    operatorFee + serviceFee
+                );
+            }
         }
 
         deposit.collectOperatorFee(operator, coin, operatorFee);
         deposit.collectServiceFee(coin, serviceFee);
 
         deal.status = DealStatus.COMPLETED;
+
+
 
         // get holders NFT
         // payout for holder if won

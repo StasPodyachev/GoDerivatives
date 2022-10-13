@@ -31,7 +31,7 @@ task("deploy:contract")
       contract.address
     );
     fs.writeFileSync(
-      "./deployment/deployments.json",
+      "./data/deployments.json",
       JSON.stringify(writeData)
     );
   });
