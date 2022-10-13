@@ -113,6 +113,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     ) external payable isFreezed {
         Deal storage deal = deals[dealId];
 
+        require(deal.maker != msg.sender, "DerivativeCFD: Taker shouldn't be maker");
         require(deal.collateralAmountMaker != 0, "DerivativeCFD: Wrong dealID");
         require(
             deal.status == DealStatus.CREATED,
@@ -121,7 +122,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
-        ); // 1e8
+        ); // 1e18
+        // 100000000000000000
+        // 1000000000000000000
+
+        // 15633992936000000000000000000
 
         uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
             1e36;
@@ -141,11 +146,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Insufficient amount of deposit for the deal"
         );
 
-        require(
-            (rateOracle > deal.rateMaker - deal.slippageMaker &&
-                rateOracle <= deal.rateMaker + deal.slippageMaker) &&
-                (rateOracle > deal.rate - deal.slippageTaker &&
-                    rateOracle <= deal.rate + deal.slippageTaker),
+       require(
+            (rateOracle > (deal.rateMaker - deal.slippageMaker)) &&
+                (rateOracle <= (deal.rateMaker + deal.slippageMaker)) &&
+                (rateOracle > (rateTaker - deal.slippageTaker)) &&
+                (rateOracle <= (rateTaker + deal.slippageTaker)),
             "DerivativeCFD: Deposit Out of range"
         );
 
@@ -328,23 +333,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         deal.status = DealStatus.COMPLETED;
 
-
-
-        // get holders NFT
-        // payout for holder if won
-        // burn all tokens
-
         emit DealCompleted(dealId);
     }
 }
-
-// 0.2 * N
-// 0.2 * 1000 = 200
-
-// 0.2 * 1500 *1e18 = 300 * 1e18
-// 0.2 * 1e18 = 2 * 1e17
-
-// 0.5 * 1e16 =
-//
-// .sol
-// (rate * count * percent) * (1 + slippage)

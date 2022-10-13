@@ -6,9 +6,9 @@ dataSources:
     name: Factory
     network: baobab
     source:
-      address: "0x8B19469C68457138c4ff64c50D54e963aa63DFA2"
+      address: "0xC094A0cffa735BA7c713c7dBa970d78c976A32cf"
       abi: Factory
-      startBlock: 103909565
+      startBlock: 104075490
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

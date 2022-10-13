@@ -5,13 +5,14 @@ import "./IAmmDeployer.sol";
 
 interface IFactory {
     struct MarketParams {
-        string underlyingAssetName;
-        address coin;
         uint256 duration;
-        address oracleAggregatorAddress;
-        IOracle.Type oracleType;
         uint256 operatorFee;
         uint256 serviceFee;
+        address oracleAggregatorAddress;
+        address nft;
+        address coin;
+        string underlyingAssetName;
+        IOracle.Type oracleType;
     }
 
     event MarketCreated(address marketAddress, address keeperAddress);
