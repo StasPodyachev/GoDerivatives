@@ -239,8 +239,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 deal.dateStop <= block.timestamp, "DerivativeCFD: deal.dateStop <= block.timestamp"
         );
 
-
-
         uint256 oracleAmount = oracle.getAmount(
             oracleAggregatorAddress,
             deal.dateStop,
