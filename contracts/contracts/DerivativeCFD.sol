@@ -10,6 +10,8 @@ import "./interfaces/IFactory.sol";
 import "./interfaces/IStorage.sol";
 import "./DealNFT.sol";
 
+import "hardhat/console.sol";
+
 abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     address public factory;
     string public underlyingAssetName;
@@ -85,7 +87,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             dateOrderExpiration: block.timestamp + params.expiration,
             dateStart: 0,
             dateStop: 0,
-            oracleAmount: 0,
             oracleRoundIDStart: 0,
             buyerTokenId: 0,
             sellerTokenId: 0,
@@ -170,6 +171,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.dateStop = deal.dateStart + duration;
         deal.status = DealStatus.ACCEPTED;
 
+
         deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg.sender;
 
         DealNFT.MintParams memory mintParams = DealNFT.MintParams({
@@ -216,7 +218,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     function processing(uint256 dealId) external isFreezed {
         Deal storage deal = deals[dealId];
 
-        require(deal.collateralAmountBuyer != 0, "DerivativeCFD: Wrong dealID");
+        require(deal.collateralAmountMaker != 0, "DerivativeCFD: Wrong dealID");
 
         if (
             deal.status == DealStatus.CREATED &&
@@ -228,10 +230,16 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             return;
         }
 
+        console.log(uint(deal.status));
+        console.log(deal.dateStop);
+        console.log(block.timestamp);
+
         require(
             deal.status == DealStatus.ACCEPTED &&
-                deal.dateStop <= block.timestamp
+                deal.dateStop <= block.timestamp, "DerivativeCFD: deal.dateStop <= block.timestamp"
         );
+
+
 
         uint256 oracleAmount = oracle.getAmount(
             oracleAggregatorAddress,
@@ -268,8 +276,9 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         uint256 operatorFee;
         uint256 serviceFee;
-        (address[] memory nftHolders, uint[] memory nftBalances) = nft.getHolders(deal.buyerTokenId);
+        (address[] memory nftHolders) = nft.getHolders(deal.buyerTokenId);
 
+        uint balanceNft;
         uint ONE = nft.ONE();
 
         if (payoutBuyer > 0) {
@@ -286,18 +295,22 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 payoutBuyer -= operatorFee;
                 payoutBuyer -= serviceFee;
             }
-
+            
             for(uint i=0; i<nftHolders.length; i++){
+                balanceNft = nft.balanceOf(nftHolders[i], deal.buyerTokenId);
+
+                if(balanceNft==0) continue;
+
                 deposit.refund(
                     nftHolders[i],
                     coin,
-                    payoutBuyer * nftBalances[i] / ONE,
+                    payoutBuyer * balanceNft / ONE,
                     operatorFee + serviceFee
                 );
             }
         }
 
-        (nftHolders, nftBalances) = nft.getHolders(deal.sellerTokenId);
+        (nftHolders) = nft.getHolders(deal.sellerTokenId);
 
         if (payoutSeller > 0) {
             if (payoutSeller > deal.collateralAmountSeller) {
@@ -316,10 +329,14 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             }
 
             for(uint i=0; i<nftHolders.length; i++){
+                balanceNft = nft.balanceOf(nftHolders[i], deal.buyerTokenId);
+
+                if(balanceNft==0) continue;
+
                 deposit.refund(
                     nftHolders[i],
                     coin,
-                    payoutSeller * nftBalances[i] / ONE,
+                    payoutSeller * balanceNft / ONE,
                     operatorFee + serviceFee
                 );
             }

@@ -1,8 +1,8 @@
 enum DealStatus {
-  CREATED,
-  ACCEPTED,
-  COMPLETED,
-  CANCELED,
+  CREATED
+  ACCEPTED
+  COMPLETED
+  CANCELED
   EXPIRED
 }
 
@@ -15,7 +15,7 @@ type Deal @entity {
   rateMaker: BigInt!
   count: BigInt!
   percent: BigInt!
-  periodOrderExpiration: BigInt!
+  dateOrderExpiration: BigInt!
   slippageMaker: BigInt!
   slippageTaker: BigInt!
   collateralAmountMaker: BigInt!

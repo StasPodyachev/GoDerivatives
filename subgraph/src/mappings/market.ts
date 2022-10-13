@@ -22,7 +22,7 @@ export function handleDealCreated(event: DealAccepted): void {
   entity.rateMaker = deal.rateMaker;
   entity.count = deal.count;
   entity.percent = deal.percent;
-  entity.periodOrderExpiration = deal.periodOrderExpiration;
+  entity.dateOrderExpiration = deal.dateOrderExpiration;
   entity.slippageMaker = deal.slippageMaker;
   entity.slippageTaker = deal.slippageTaker;
   entity.collateralAmountBuyer = deal.collateralAmountBuyer;
@@ -73,7 +73,11 @@ export function handleDealAccepted(event: DealAccepted): void {
   entity.seller = deal.seller;
   entity.collateralAmountBuyer = deal.collateralAmountBuyer;
   entity.collateralAmountSeller = deal.collateralAmountSeller;
+  entity.slippageTaker = deal.slippageTaker;
+  entity.dateOrderCreation = deal.dateOrderCreation;
   entity.rate = deal.rate;
+  entity.dateStart = deal.dateStart;
+  entity.dateStop = deal.dateStop;
   entity.oracleRoundIDStart = deal.oracleRoundIDStart;
   entity.buyerTokenId = deal.buyerTokenId;
   entity.sellerTokenId = deal.sellerTokenId;
