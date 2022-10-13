@@ -147,10 +147,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         );
 
        require(
-            (rateOracle > (deal.rateMaker - deal.slippageMaker)) &&
-                (rateOracle <= (deal.rateMaker + deal.slippageMaker)) &&
-                (rateOracle > (rateTaker - deal.slippageTaker)) &&
-                (rateOracle <= (rateTaker + deal.slippageTaker)),
+(collateralAmount > (deal.collateralAmountMaker - deal.slippageMaker)) &&
+(collateralAmount <= (deal.collateralAmountMaker + deal.slippageMaker)) &&
+(collateralAmount > (collateralAmountTaker - deal.slippageTaker)) &&
+(collateralAmount <= (collateralAmountTaker + deal.slippageTaker)),
             "DerivativeCFD: Deposit Out of range"
         );
 
