@@ -392,7 +392,9 @@ let dealId: BigNumberish;
           console.log("test for untaken unexpired deal");
           let dealParams = await wtiMarketMaker.getDeal(dealId);
 
-          await wtiMarketMaker.processing(dealId);
+          // await wtiMarketMaker.processing(dealId);
+
+          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
 
           dealParams = await wtiMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
@@ -411,7 +413,9 @@ let dealId: BigNumberish;
           );
           await takeDealTx.wait();
 
-          await wtiMarketMaker.processing(dealId);
+          // await wtiMarketMaker.processing(dealId);
+
+          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
 
           dealParams = await wtiMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
