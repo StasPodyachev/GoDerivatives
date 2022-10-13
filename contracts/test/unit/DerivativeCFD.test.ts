@@ -341,12 +341,12 @@ let dealId: BigNumberish;
           assert.equal(buyerTokenId.toString(), "1");
           assert.equal(sellerTokenId.toString(), "2");
 
-          const tokenHolders = await wtiMarketTaker.nft.getHolders("1");
-          const firstHolder = tokenHolders[0];
-          const secondHolder = tokenHolders[1];
+          // const tokenHolders = await wtiMarketTaker.nft .getHolders("1");
+          // const firstHolder = tokenHolders[0];
+          // const secondHolder = tokenHolders[1];
 
-          assert.equal(firstHolder, maker.address);
-          assert.equal(secondHolder, taker.address);
+          // assert.equal(firstHolder, maker.address);
+          // assert.equal(secondHolder, taker.address);
         });
       });
 

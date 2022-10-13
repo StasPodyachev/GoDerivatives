@@ -47,7 +47,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     }
 
     function createDeal(DealParams calldata params) external payable isFreezed {
-        uint256 slippage = (params.count *
+        uint256 slippageAmount = (params.count *
             params.rate *
             params.percent *
             params.slippage) / 1e54;
@@ -56,7 +56,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             params.rate *
             params.percent) /
             1e36 +
-            slippage;
+            slippageAmount;
 
         require(
             msg.value > 0 ? collateralAmountMaker == msg.value : true,
@@ -76,7 +76,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             count: params.count,
             percent: params.percent,
             periodOrderExpiration: params.expiration,
-            slippageMaker: slippage,
+            slippageMaker: params.slippage,
             slippageTaker: 0,
             collateralAmountMaker: collateralAmountMaker,
             collateralAmountBuyer: 0,
@@ -102,7 +102,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         emit DealCreated(dealId);
 
         if (address(amm) != address(0)) {
-            amm.takeDeal(address(this), dealId, params.rate, slippage, collateralAmountMaker, coin);
+            amm.takeDeal(address(this), dealId, params.rate, params.slippage, collateralAmountMaker, coin);
         }
     }
 
@@ -131,7 +131,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
             1e36;
 
-        deal.slippageTaker =
+        uint256 slippageTakerAmount =
             (deal.count * rateTaker * deal.percent * slippageTaker) /
             1e54;
 
@@ -139,7 +139,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             rateTaker *
             deal.percent) /
             1e36 +
-            deal.slippageTaker;
+            slippageTakerAmount;
 
         require(
             collateralAmount <= collateralAmountTaker,
@@ -147,10 +147,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         );
 
        require(
-(collateralAmount > (deal.collateralAmountMaker - deal.slippageMaker)) &&
-(collateralAmount <= (deal.collateralAmountMaker + deal.slippageMaker)) &&
-(collateralAmount > (collateralAmountTaker - deal.slippageTaker)) &&
-(collateralAmount <= (collateralAmountTaker + deal.slippageTaker)),
+            (rateOracle  > (deal.rateMaker - deal.rateMaker * deal.slippageMaker / 1e18)) &&
+            (rateOracle <= (deal.rateMaker + deal.rateMaker * deal.slippageMaker / 1e18)) &&
+            (rateOracle  > (rateTaker - rateTaker * slippageTaker / 1e18)) &&
+            (rateOracle <= (rateTaker + rateTaker * slippageTaker / 1e18)),
             "DerivativeCFD: Deposit Out of range"
         );
 
@@ -164,7 +164,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deal.collateralAmountMaker - collateralAmount,
             0
         );
-
+        
+        deal.slippageTaker = slippageTaker;
         deal.oracleRoundIDStart = roundId;
         deal.collateralAmountBuyer = collateralAmount;
         deal.collateralAmountSeller = collateralAmount;

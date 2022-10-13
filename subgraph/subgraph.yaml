@@ -6,7 +6,7 @@ dataSources:
     name: Factory
     network: baobab
     source:
-      address: "0x01f6898EFB1fC1eA8FA7FC66D0202DC0133ed69f"
+      address: "0x367a9cd8e2E843026DFb6f45538913CEC150219C"
       abi: Factory
       startBlock: 104075490
     mapping:

@@ -204,6 +204,7 @@ export async function setup() {
   // deploy WTI/USDC market
   const wtiMarketCreateTx = await factory.createMarket({
     underlyingAssetName: "WTI",
+    nft: testUSDC.address,
     coin: testUSDC.address,
     duration: 86400,
     oracleAggregatorAddress: mockV3Aggregator.address,
