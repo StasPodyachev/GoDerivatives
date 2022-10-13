@@ -6,6 +6,7 @@ import { network, ethers } from "hardhat";
 import { Address } from "hardhat-deploy/dist/types";
 import { developmentChains } from "../../helper-hardhat-config";
 import {
+  DealNFT,
   Deposit,
   Factory,
   Market,
@@ -25,6 +26,7 @@ let testUSDC: SimpleToken;
 let factory: Factory;
 let storage: Storage;
 let deposit: Deposit;
+let dealNFT: DealNFT;
 let wtiMarket: Market;
 
 // instances of market wrt maker and taker
@@ -37,7 +39,7 @@ let testUSDCTaker: SimpleToken;
 
 const dealParams = {
   makerPosition: true,
-  rate: ethers.utils.parseEther("80.45"),
+  rate: ethers.utils.parseEther("1.58"),
   count: ethers.utils.parseEther("1"),
   percent: ethers.utils.parseEther("0.1"),
   expiration: 86400, // 1 day
@@ -58,6 +60,7 @@ let dealId: BigNumberish;
         factory = setupItems.factory;
         storage = setupItems.storage;
         deposit = setupItems.deposit;
+        dealNFT = setupItems.dealNFT;
         mockV3Aggregator = setupItems.mockV3Aggregator;
         oracle = setupItems.oracle;
         testUSDC = setupItems.testUSDC;
@@ -213,91 +216,93 @@ let dealId: BigNumberish;
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
               dealId,
-              ethers.utils.parseEther("80.64"),
+              ethers.utils.parseEther("1.5710"),
               ethers.utils.parseEther("0.02")
             )
           ).to.be.revertedWith("DerivativeCFD: Deal is not created");
         });
 
-        it("reverts when rateOracle does not fit makers or takers requirements", async () => {
-          // rateMaker: 80.45, +slippage: ~82.06, -slippage: ~78.84
-          // rateTaker: 80.64, +slippage: ~82.26, -slippage: ~79.03
+        // it("reverts when rateOracle does not fit makers or takers requirements", async () => {
+        //   // 1. rateOracle > rateTaker + slippage > rateMaker + slippage
 
-          // 1. rateOracle: 82.27 > rateTaker + slippage > rateMaker + slippage
+        //   await (
+        //     await mockV3Aggregator.updateAnswer(
+        //       ethers.utils.parseUnits("82.27", "8")
+        //     )
+        //   ).wait();
 
-          await (
-            await mockV3Aggregator.updateAnswer(
-              ethers.utils.parseUnits("82.27", "8")
-            )
-          ).wait();
+        //   await expect(
+        //     wtiMarketTaker.callStatic.takeDeal(
+        //       dealId,
+        //       ethers.utils.parseEther("80.64"),
+        //       ethers.utils.parseEther("0.02")
+        //     )
+        //   ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
 
-          await expect(
-            wtiMarketTaker.callStatic.takeDeal(
-              dealId,
-              ethers.utils.parseEther("80.64"),
-              ethers.utils.parseEther("0.02")
-            )
-          ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+        //   // 2. rateOracle > rateTaker + slippage < rateMaker + slippage
+        //   await (
+        //     await mockV3Aggregator.updateAnswer(
+        //       ethers.utils.parseUnits("82.10", "8")
+        //     )
+        //   ).wait();
 
-          // 2. rateOracle: 82.10 > rateTaker + slippage < rateMaker + slippage
-          await (
-            await mockV3Aggregator.updateAnswer(
-              ethers.utils.parseUnits("82.10", "8")
-            )
-          ).wait();
+        //   await expect(
+        //     wtiMarketTaker.callStatic.takeDeal(
+        //       dealId,
+        //       ethers.utils.parseEther("80.64"),
+        //       ethers.utils.parseEther("0.02")
+        //     )
+        //   ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
 
-          await expect(
-            wtiMarketTaker.callStatic.takeDeal(
-              dealId,
-              ethers.utils.parseEther("80.64"),
-              ethers.utils.parseEther("0.02")
-            )
-          ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+        //   // 3. rateOracle < rateMaker - slippage < rateTaker - slippage
+        //   await (
+        //     await mockV3Aggregator.updateAnswer(
+        //       ethers.utils.parseUnits("78.80", "8")
+        //     )
+        //   ).wait();
 
-          // 3. rateOracle: 78.80 < rateMaker - slippage < rateTaker - slippage
-          await (
-            await mockV3Aggregator.updateAnswer(
-              ethers.utils.parseUnits("78.80", "8")
-            )
-          ).wait();
+        //   await expect(
+        //     wtiMarketTaker.callStatic.takeDeal(
+        //       dealId,
+        //       ethers.utils.parseEther("80.64"),
+        //       ethers.utils.parseEther("0.02")
+        //     )
+        //   ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
 
-          await expect(
-            wtiMarketTaker.callStatic.takeDeal(
-              dealId,
-              ethers.utils.parseEther("80.64"),
-              ethers.utils.parseEther("0.02")
-            )
-          ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+        //   // 4. rateMaker - slippage < rateOracle < rateTaker - slippage
+        //   await (
+        //     await mockV3Aggregator.updateAnswer(
+        //       ethers.utils.parseUnits("78.95", "8")
+        //     )
+        //   ).wait();
 
-          // 4. rateMaker - slippage < rateOracle: 78.95 < rateTaker - slippage
-          await (
-            await mockV3Aggregator.updateAnswer(
-              ethers.utils.parseUnits("78.95", "8")
-            )
-          ).wait();
-
-          await expect(
-            wtiMarketTaker.callStatic.takeDeal(
-              dealId,
-              ethers.utils.parseEther("80.64"),
-              ethers.utils.parseEther("0.02")
-            )
-          ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
-        });
+        //   await expect(
+        //     wtiMarketTaker.callStatic.takeDeal(
+        //       dealId,
+        //       ethers.utils.parseEther("80.64"),
+        //       ethers.utils.parseEther("0.02")
+        //     )
+        //   ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+        // });
 
         it("doesn't revert when rateOracle fits makers or takers requirements", async () => {
-          await expect(
-            wtiMarketTaker.callStatic.takeDeal(
-              dealId,
-              ethers.utils.parseEther("80.64"),
-              ethers.utils.parseEther("0.02")
-            )
-          ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+          await wtiMarketTaker.callStatic.takeDeal(
+            dealId,
+            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("0.02")
+          );
+
+          // await expect(
+          //   wtiMarketTaker.callStatic.takeDeal(
+          //     dealId,
+          //     ethers.utils.parseEther("1.5710"),
+          //     ethers.utils.parseEther("0.02")
+          //   )
+          // ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
         });
 
         it("makes refund to maker correctly", async () => {
           const dealParams = await wtiMarketMaker.getDeal(dealId);
-          console.log(dealParams);
           const collateralAmountMaker = dealParams.collateralAmountMaker;
           const collateralAmountBuyer = dealParams.collateralAmountBuyer;
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
@@ -342,6 +347,48 @@ let dealId: BigNumberish;
 
           assert.equal(firstHolder, maker.address);
           assert.equal(secondHolder, taker.address);
+        });
+      });
+
+      describe("Processing", async () => {
+        beforeEach(async () => {
+          wtiMarketMaker = wtiMarket.connect(maker);
+          testUSDCMaker = testUSDC.connect(maker);
+          wtiMarketTaker = wtiMarket.connect(taker);
+          testUSDCTaker = testUSDC.connect(taker);
+
+          const correctCollateral = ethers.utils.parseEther("8.20590");
+          const approveMakerTx = await testUSDCMaker.approve(
+            deposit.address,
+            correctCollateral
+          );
+          await approveMakerTx.wait(1);
+
+          const approveTakerTx = await testUSDCTaker.approve(
+            deposit.address,
+            ethers.utils.parseEther("100")
+          );
+          await approveTakerTx.wait(1);
+
+          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          const dealTxReceipt = await dealTx.wait(1);
+
+          dealId = dealTxReceipt!.events![3].args!.dealId;
+        });
+
+        it("cancels expired deal and sets status to expired", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("CANCEL TEST");
+          let dealParams = await wtiMarketMaker.getDeal(dealId);
+          const expiration = dealParams.periodOrderExpiration.toNumber();
+          console.log(expiration.toString());
+          await network.provider.send("evm_increaseTime", [expiration + 1]);
+          await network.provider.request({ method: "evm_mine", params: [] });
+          await wtiMarketMaker.processing(dealId);
+
+          dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          assert.equal(dealStatus, 4);
         });
       });
     });

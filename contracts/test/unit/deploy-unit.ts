@@ -3,6 +3,8 @@ import { ethers } from "hardhat";
 import { Address } from "hardhat-deploy/dist/types";
 
 import {
+  DealNFT,
+  DealNFT__factory,
   Deposit,
   Deposit__factory,
   // DerivativeCFD,
@@ -23,8 +25,8 @@ import {
   Storage__factory,
 } from "../../typechain";
 
-const DECIMALS = "8";
-const INITIAL_PRICE = ethers.utils.parseUnits("80.53", DECIMALS);
+const DECIMALS = "18";
+const INITIAL_PRICE = ethers.utils.parseUnits("1.57", DECIMALS);
 
 async function deployMockV3Aggregator(
   owner: SignerWithAddress
@@ -114,6 +116,19 @@ async function deployFactory(owner: SignerWithAddress): Promise<Factory> {
   return factory;
 }
 
+async function deployNFT(owner: SignerWithAddress): Promise<DealNFT> {
+  let dealNFT: DealNFT;
+  let dealNFTFactory: DealNFT__factory;
+  dealNFTFactory = (await ethers.getContractFactory(
+    "DealNFT"
+  )) as DealNFT__factory;
+  dealNFTFactory.connect(owner);
+  dealNFT = await dealNFTFactory.deploy("");
+  dealNFT.connect(owner);
+
+  return dealNFT;
+}
+
 async function deployStorage(owner: SignerWithAddress): Promise<Storage> {
   let storage: Storage;
   let storageFactory: Storage__factory;
@@ -175,6 +190,7 @@ export async function setup() {
   const storage = await deployStorage(owner);
   // const marketDeployer = await deployMarketDeployer(owner);
   const deposit = await deployDeposit(owner);
+  const dealNFT = await deployNFT(owner);
 
   // set reference dependencies
   await factory.setDeposit(deposit.address);
@@ -191,6 +207,7 @@ export async function setup() {
     coin: testUSDC.address,
     duration: 86400,
     oracleAggregatorAddress: mockV3Aggregator.address,
+    nft: dealNFT.address,
     oracleType: 0,
     operatorFee: ethers.utils.parseEther("0.03"),
     serviceFee: ethers.utils.parseEther("0.03"),
@@ -212,6 +229,7 @@ export async function setup() {
     factory,
     storage,
     deposit,
+    dealNFT,
     mockV3Aggregator,
     oracle,
     testUSDC,
