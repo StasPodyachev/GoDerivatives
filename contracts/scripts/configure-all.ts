@@ -60,7 +60,8 @@ async function factory() {
   tx = await factory.setDeposit(depositDeployed.address);
   await tx.wait();
 
-  await factory.addOracleAddress(oracleDeployed.address, 0); // Chainlink wrapper
+  tx = await factory.addOracleAddress(oracleDeployed.address, 0); // Chainlink wrapper
+  await tx.wait();
 
   tx = await factory.createMarket({
     coin: tUsdDeployed.address,

@@ -230,6 +230,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             return;
         }
 
+        console.log(uint(deal.status));
+        console.log(deal.dateStop);
+        console.log(block.timestamp);
+
         require(
             deal.status == DealStatus.ACCEPTED &&
                 deal.dateStop <= block.timestamp, "DerivativeCFD: deal.dateStop <= block.timestamp"
@@ -323,7 +327,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             }
 
             for(uint i=0; i<nftHolders.length; i++){
-                balanceNft = nft.balanceOf(nftHolders[i], deal.sellerTokenId);
+                balanceNft = nft.balanceOf(nftHolders[i], deal.buyerTokenId);
 
                 if(balanceNft==0) continue;
 

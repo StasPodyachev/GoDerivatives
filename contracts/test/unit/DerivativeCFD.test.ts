@@ -401,7 +401,6 @@ let dealId: BigNumberish;
 
         it("test for taken unexpired deal", async () => {
           // simulating getting blockchain time on expiration date
-          console.log("test for taken unexpired deal");
           let dealParams = await wtiMarketMaker.getDeal(dealId);
 
           const takeDealTx = await wtiMarketTaker.takeDeal(

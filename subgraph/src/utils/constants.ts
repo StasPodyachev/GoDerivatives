@@ -10,7 +10,7 @@ export let ONE_BD = BigDecimal.fromString("1");
 export let BI_18 = BigInt.fromI32(18);
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
-export const FACTORY_ADDRESS = "0x75B151861B968826D3326ca009B4C0842214d05b";
+export const FACTORY_ADDRESS = "0xB9CB6aCc222D55330778c94ffc63d326C0388c2b";
 
 export let factoryContract: FactoryContract = FactoryContract.bind(
   Address.fromString(FACTORY_ADDRESS)
