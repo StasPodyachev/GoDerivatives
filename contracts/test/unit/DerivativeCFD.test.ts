@@ -183,11 +183,17 @@ let dealId: BigNumberish;
           testUSDCTaker = testUSDC.connect(taker);
 
           const correctCollateral = ethers.utils.parseEther("8.20590");
-          const approveTx = await testUSDCMaker.approve(
+          const approveMakerTx = await testUSDCMaker.approve(
             deposit.address,
             correctCollateral
           );
-          await approveTx.wait(1);
+          await approveMakerTx.wait(1);
+
+          const approveTakerTx = await testUSDCTaker.approve(
+            deposit.address,
+            ethers.utils.parseEther("100")
+          );
+          await approveTakerTx.wait(1);
 
           const dealTx = await wtiMarketMaker.createDeal(dealParams);
           const dealTxReceipt = await dealTx.wait(1);
@@ -216,16 +222,14 @@ let dealId: BigNumberish;
         it("reverts when rateOracle does not fit makers or takers requirements", async () => {
           // rateMaker: 80.45, +slippage: ~82.06, -slippage: ~78.84
           // rateTaker: 80.64, +slippage: ~82.26, -slippage: ~79.03
-          // 1. rateOracle: 82.26 > rateTaker + slippage > rateMaker + slippage
+
+          // 1. rateOracle: 82.27 > rateTaker + slippage > rateMaker + slippage
+
           await (
             await mockV3Aggregator.updateAnswer(
-              ethers.utils.parseUnits("82.26", "8")
+              ethers.utils.parseUnits("82.27", "8")
             )
           ).wait();
-
-          let priceData = await oracle.getLatest(mockV3Aggregator.address);
-          let price = priceData[0];
-          console.log(`Price: ${price}`);
 
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
@@ -242,10 +246,6 @@ let dealId: BigNumberish;
             )
           ).wait();
 
-          priceData = await oracle.getLatest(mockV3Aggregator.address);
-          price = priceData[0];
-          console.log(`Price: ${price}`);
-
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
               dealId,
@@ -260,10 +260,6 @@ let dealId: BigNumberish;
               ethers.utils.parseUnits("78.80", "8")
             )
           ).wait();
-
-          priceData = await oracle.getLatest(mockV3Aggregator.address);
-          price = priceData[0];
-          console.log(`Price: ${price}`);
 
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
@@ -280,10 +276,6 @@ let dealId: BigNumberish;
             )
           ).wait();
 
-          priceData = await oracle.getLatest(mockV3Aggregator.address);
-          price = priceData[0];
-          console.log(`Price: ${price}`);
-
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
               dealId,
@@ -293,21 +285,63 @@ let dealId: BigNumberish;
           ).to.be.revertedWith("DerivativeCFD: Deposit Out of range");
         });
 
-        it("makes refund to maker correctly", async () => {
-          let priceData = await oracle.getLatest(mockV3Aggregator.address);
-          let price = priceData[0];
-          console.log(`Price: ${price}`);
+        it("doesn't revert when rateOracle fits makers or takers requirements", async () => {
+          await expect(
+            wtiMarketTaker.callStatic.takeDeal(
+              dealId,
+              ethers.utils.parseEther("80.64"),
+              ethers.utils.parseEther("0.02")
+            )
+          ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
+        });
 
+        it("makes refund to maker correctly", async () => {
+          const dealParams = await wtiMarketMaker.getDeal(dealId);
+          console.log(dealParams);
+          const collateralAmountMaker = dealParams.collateralAmountMaker;
+          const collateralAmountBuyer = dealParams.collateralAmountBuyer;
+          const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
             ethers.utils.parseEther("80.64"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
+
+          const makerBalanceAfter = await testUSDC.balanceOf(maker.address);
+
+          const amountToRefund = collateralAmountMaker.sub(
+            collateralAmountBuyer
+          );
+
+          assert.equal(
+            makerBalanceBefore.add(amountToRefund),
+            makerBalanceAfter
+          );
         });
 
-        it("mints NFT and assigns ownership to buyer and seller correctly", async () => {});
+        it("mints NFT and assigns ownership to buyer and seller correctly", async () => {
+          const takeDealTx = await wtiMarketTaker.takeDeal(
+            dealId,
+            ethers.utils.parseEther("80.64"),
+            ethers.utils.parseEther("0.02")
+          );
+          await takeDealTx.wait();
 
-        it("emits DealAccepted event when taking deal is completed", async () => {});
+          const dealParams = await wtiMarketMaker.getDeal(dealId);
+
+          const buyerTokenId = dealParams.buyerTokenId;
+          const sellerTokenId = dealParams.sellerTokenId;
+
+          assert.equal(buyerTokenId.toString(), "1");
+          assert.equal(sellerTokenId.toString(), "2");
+
+          const tokenHolders = await wtiMarketTaker.nft.getHolders("1");
+          const firstHolder = tokenHolders[0];
+          const secondHolder = tokenHolders[1];
+
+          assert.equal(firstHolder, maker.address);
+          assert.equal(secondHolder, taker.address);
+        });
       });
     });

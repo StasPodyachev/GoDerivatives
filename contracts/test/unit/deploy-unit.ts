@@ -179,6 +179,7 @@ export async function setup() {
   // set reference dependencies
   await factory.setDeposit(deposit.address);
   await factory.setStorage(storage.address);
+  await factory.addOracleAddress(oracle.address, "0");
 
   await storage.setFactory(factory.address);
 
