@@ -1,4 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { isAddress } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import { Address } from "hardhat-deploy/dist/types";
 
@@ -202,8 +203,8 @@ export async function setup() {
   await deposit.setFactory(factory.address);
 
   // deploy WTI/USDC market
-  const wtiMarketCreateTx = await factory.createMarket({
-    underlyingAssetName: "WTI",
+  const wemixTUSDMarketCreateTx = await factory.createMarket({
+    underlyingAssetName: "WEMIX/TUSD",
     coin: testUSDC.address,
     duration: 86400,
     oracleAggregatorAddress: mockV3Aggregator.address,
@@ -212,13 +213,31 @@ export async function setup() {
     operatorFee: ethers.utils.parseEther("0.03"),
     serviceFee: ethers.utils.parseEther("0.03"),
   });
+  await wemixTUSDMarketCreateTx.wait(1);
 
-  await wtiMarketCreateTx.wait(1);
+  const wemixKLAYMarketCreateTx = await factory.createMarket({
+    underlyingAssetName: "WEMIX/KLAY",
+    coin: ethers.constants.AddressZero,
+    duration: 86400,
+    oracleAggregatorAddress: mockV3Aggregator.address,
+    nft: dealNFT.address,
+    oracleType: 0,
+    operatorFee: ethers.utils.parseEther("0.03"),
+    serviceFee: ethers.utils.parseEther("0.03"),
+  });
+  await wemixKLAYMarketCreateTx.wait(1);
 
-  const wtiMarketAddress = await factory.allMarkets(0);
-  const wtiMarket = (await ethers.getContractAt(
+  const wemixTUSDMarketAddress = await factory.allMarkets(0);
+  const wemixTUSDMarket = (await ethers.getContractAt(
     "Market",
-    wtiMarketAddress,
+    wemixTUSDMarketAddress,
+    owner
+  )) as Market;
+
+  const wemixKLAYMarketAddress = await factory.allMarkets(0);
+  const wemixKLAYMarket = (await ethers.getContractAt(
+    "Market",
+    wemixKLAYMarketAddress,
     owner
   )) as Market;
 
@@ -233,6 +252,7 @@ export async function setup() {
     mockV3Aggregator,
     oracle,
     testUSDC,
-    wtiMarket,
+    wemixTUSDMarket,
+    wemixKLAYMarket,
   };
 }

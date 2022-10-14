@@ -27,11 +27,14 @@ let factory: Factory;
 let storage: Storage;
 let deposit: Deposit;
 let dealNFT: DealNFT;
-let wtiMarket: Market;
+let wemixTUSDMarket: Market;
+let wemixKLAYMarket: Market;
 
 // instances of market wrt maker and taker
-let wtiMarketMaker: Market;
-let wtiMarketTaker: Market;
+let wemixTUSDMarketMaker: Market;
+let wemixTUSDMarketTaker: Market;
+let wemixKLAYMarketMaker: Market;
+let wemixKLAYMarketTaker: Market;
 
 // instances of testUSDC wrt maker and taker
 let testUSDCMaker: SimpleToken;
@@ -40,7 +43,7 @@ let testUSDCTaker: SimpleToken;
 const count = ethers.utils.parseEther("1");
 const percent = ethers.utils.parseEther("0.1");
 const makerPrice = ethers.utils.parseEther("1.6250");
-const makerSlippage = takerSlippage;
+const makerSlippage = ethers.utils.parseEther("0.02");
 const base64 = ethers.utils.parseUnits("1", 54);
 const base36 = ethers.utils.parseUnits("1", 36);
 const slippageAmount = count
@@ -77,7 +80,7 @@ const correctCollateralTaker = count
   .add(slippageAmountTaker);
 
 let dealId: BigNumberish;
-let dealIdETH: BigNumberish;
+let dealIdKLAY: BigNumberish;
 
 !developmentChains.includes(network.name)
   ? describe.skip
@@ -95,18 +98,20 @@ let dealIdETH: BigNumberish;
         mockV3Aggregator = setupItems.mockV3Aggregator;
         oracle = setupItems.oracle;
         testUSDC = setupItems.testUSDC;
-        wtiMarket = setupItems.wtiMarket;
+        wemixTUSDMarket = setupItems.wemixTUSDMarket;
+        wemixKLAYMarket = setupItems.wemixKLAYMarket;
       });
 
       describe("Create Deal", () => {
         beforeEach(async () => {
-          wtiMarketMaker = wtiMarket.connect(maker);
+          wemixTUSDMarketMaker = wemixTUSDMarket.connect(maker);
           testUSDCMaker = testUSDC.connect(maker);
+          wemixKLAYMarketMaker = wemixKLAYMarket.connect(maker);
         });
 
         it("calculates collateralAmountMaker correctly", async () => {
           await expect(
-            wtiMarketMaker.callStatic.createDeal(dealParams, {
+            wemixKLAYMarketMaker.callStatic.createDeal(dealParams, {
               value: correctCollateralMaker,
             })
           ).to.not.be.revertedWith(
@@ -117,7 +122,7 @@ let dealIdETH: BigNumberish;
         it("reverts when passing incorrect collateral amount", async () => {
           const incorrectCollateralMaker = ethers.utils.parseEther("8.2590");
           await expect(
-            wtiMarketMaker.callStatic.createDeal(dealParams, {
+            wemixKLAYMarketMaker.callStatic.createDeal(dealParams, {
               value: incorrectCollateralMaker,
             })
           ).to.be.revertedWith(
@@ -128,7 +133,7 @@ let dealIdETH: BigNumberish;
         it("subtracts deposit correctly when passing collateral explicitly", async () => {
           const makerETHBalanceBefore = await maker.getBalance();
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams, {
+          const dealTx = await wemixKLAYMarketMaker.createDeal(dealParams, {
             value: correctCollateralMaker,
           });
           const dealTxReceipt = await dealTx.wait();
@@ -169,7 +174,7 @@ let dealIdETH: BigNumberish;
           );
           await approveTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          const dealTx = await wemixTUSDMarketMaker.createDeal(dealParams);
           await dealTx.wait(1);
 
           const makerBalanceAfter = await testUSDC.balanceOf(maker.address);
@@ -196,27 +201,13 @@ let dealIdETH: BigNumberish;
           );
           await approveTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams);
-          const dealTxReceipt = await dealTx.wait(1);
-
-          const dealId = dealTxReceipt!.events![3].args!.dealId;
-          assert.equal(dealId.toString(), "1");
-        });
-
-        it("emits DealCreated event correctly when creating deal", async () => {
-          const approveTx = await testUSDCMaker.approve(
-            deposit.address,
-            correctCollateralMaker
-          );
-          await approveTx.wait(1);
-
-          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          const dealTx = await wemixTUSDMarketMaker.createDeal(dealParams);
           const dealTxReceipt = await dealTx.wait(1);
 
           const dealId = dealTxReceipt!.events![3].args!.dealId;
           assert.equal(dealId.toString(), "1");
 
-          const createdDealParams = await wtiMarketMaker.getDeal(dealId);
+          const createdDealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           assert.equal(createdDealParams.status, 0);
         });
 
@@ -227,7 +218,7 @@ let dealIdETH: BigNumberish;
           );
           await approveTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams, {
+          const dealTx = await wemixKLAYMarketMaker.createDeal(dealParams, {
             value: correctCollateralMaker,
           });
           const dealTxReceipt = await dealTx.wait(1);
@@ -235,17 +226,20 @@ let dealIdETH: BigNumberish;
           const dealId = dealTxReceipt!.events![1].args!.dealId;
           assert.equal(dealId.toString(), "1");
 
-          const createdDealParams = await wtiMarketMaker.getDeal(dealId);
+          const createdDealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           assert.equal(createdDealParams.status, 0);
         });
       });
 
       describe("Take deal", () => {
         beforeEach(async () => {
-          wtiMarketMaker = wtiMarket.connect(maker);
+          wemixTUSDMarketMaker = wemixTUSDMarket.connect(maker);
           testUSDCMaker = testUSDC.connect(maker);
-          wtiMarketTaker = wtiMarket.connect(taker);
+          wemixTUSDMarketTaker = wemixTUSDMarket.connect(taker);
           testUSDCTaker = testUSDC.connect(taker);
+
+          wemixKLAYMarketMaker = wemixKLAYMarket.connect(maker);
+          wemixKLAYMarketTaker = wemixKLAYMarket.connect(taker);
 
           const approveMakerTx = await testUSDCMaker.approve(
             deposit.address,
@@ -259,31 +253,44 @@ let dealIdETH: BigNumberish;
           );
           await approveTakerTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          const dealTx = await wemixTUSDMarketMaker.createDeal(dealParams);
           const dealTxReceipt = await dealTx.wait(1);
 
           dealId = dealTxReceipt!.events![3].args!.dealId;
 
           // Setup for ETH based deals
-          const dealETHTx = await wtiMarketMaker.createDeal(dealParams, {
+          const dealKLAYTx = await wemixKLAYMarketMaker.createDeal(dealParams, {
             value: correctCollateralMaker,
           });
-          const dealETHTxReceipt = await dealETHTx.wait(1);
+          const dealKLAYTxReceipt = await dealKLAYTx.wait(1);
 
-          dealIdETH = dealETHTxReceipt!.events![1].args!.dealId;
+          dealIdKLAY = dealKLAYTxReceipt!.events![1].args!.dealId;
         });
 
         it("reverts when deal status is not created", async () => {
           // cancelling deal to change status to CANCELLED
-          const cancelTx = await wtiMarketMaker.cancelDeal(dealId);
-          // verifying that transaction is cancelled
+          const cancelTx = await wemixTUSDMarketMaker.cancelDeal(dealId);
           await cancelTx.wait();
-          const dealParams = await wtiMarketMaker.getDeal(dealId);
+          const cancelETHTx = await wemixKLAYMarketMaker.cancelDeal(dealIdKLAY);
+          await cancelETHTx.wait();
+
+          // verifying that transaction is cancelled
+          const dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           assert.equal(dealParams.status, 3);
+
+          const dealKLAYParams = await wemixKLAYMarketMaker.getDeal(dealId);
+          assert.equal(dealKLAYParams.status, 3);
 
           // expect revert because deal status is not CREATED
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
+              dealId,
+              takerPrice,
+              takerSlippage
+            )
+          ).to.be.revertedWith("DerivativeCFD: Deal is not created");
+          await expect(
+            wemixKLAYMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
@@ -303,7 +310,7 @@ let dealIdETH: BigNumberish;
           ).wait();
 
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
@@ -318,7 +325,7 @@ let dealIdETH: BigNumberish;
           ).wait();
 
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
@@ -333,7 +340,7 @@ let dealIdETH: BigNumberish;
           ).wait();
 
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
@@ -348,7 +355,7 @@ let dealIdETH: BigNumberish;
           ).wait();
 
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
@@ -357,7 +364,7 @@ let dealIdETH: BigNumberish;
         });
 
         it("doesn't revert when rateOracle fits makers or takers requirements", async () => {
-          // const takeDealTx = await wtiMarketTaker.takeDeal(
+          // const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
           //   dealId,
           //   ethers.utils.parseEther("1.5710"),createdDconst
           //   takerSlippage
@@ -366,33 +373,33 @@ let dealIdETH: BigNumberish;
           // await takeDealTx.wait();
 
           await expect(
-            wtiMarketTaker.callStatic.takeDeal(
+            wemixTUSDMarketTaker.callStatic.takeDeal(
               dealId,
               takerPrice,
               takerSlippage
             )
           ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
-
-          // await expect(
-          //   wtiMarketTaker.callStatic.takeDeal(
-          //     dealIdETH,
-          //     takerPrice,
-          //     takerSlippage,
-          //     {
-          //       value:
-          //     }
-          //   )
-          // ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
         });
 
-        it("reverts if passes incorrect collateral in ETH based deals", async () => {});
+        it("reverts if passes incorrect collateral in ETH based deals", async () => {
+          const incorrectCollateralTaker = ethers.utils.parseEther("10.0");
+          const dealKLAYTx = await wemixKLAYMarketTaker.takeDeal(
+            dealIdKLAY,
+            takerPrice,
+            takerSlippage,
+            {
+              value: incorrectCollateralTaker,
+            }
+          );
+          await dealKLAYTx.wait(1);
+        });
 
         it("makes refund to maker correctly", async () => {
-          const dealParams = await wtiMarketMaker.getDeal(dealId);
+          const dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           const collateralAmountMaker = dealParams.collateralAmountMaker;
           const collateralAmountBuyer = dealParams.collateralAmountBuyer;
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
-          const takeDealTx = await wtiMarketTaker.takeDeal(
+          const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
             takerPrice,
             takerSlippage
@@ -416,14 +423,14 @@ let dealIdETH: BigNumberish;
         });
 
         it("mints NFT and assigns ownership to buyer and seller correctly", async () => {
-          const takeDealTx = await wtiMarketTaker.takeDeal(
+          const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
             takerPrice,
             takerSlippage
           );
           await takeDealTx.wait();
 
-          const dealParams = await wtiMarketMaker.getDeal(dealId);
+          const dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
 
           const buyerTokenId = dealParams.buyerTokenId;
           const sellerTokenId = dealParams.sellerTokenId;
@@ -431,7 +438,7 @@ let dealIdETH: BigNumberish;
           assert.equal(buyerTokenId.toString(), "1");
           assert.equal(sellerTokenId.toString(), "2");
 
-          // const tokenHolders = await wtiMarketTaker.nft.getHolders("1");
+          // const tokenHolders = await wemixTUSDMarketTaker.nft.getHolders("1");
           // const firstHolder = tokenHolders[0];
           // const secondHolder = tokenHolders[1];
 
@@ -440,33 +447,43 @@ let dealIdETH: BigNumberish;
         });
 
         // ETH based deals
-        // it("calculates collateralAmountTaker correctly", async () => {
-        //   await expect(
-        //     wtiMarketMaker.callStatic.takeDeal(dealParams, {
-        //       value: correctCollateralMaker,
-        //     })
-        //   ).to.not.be.revertedWith(
-        //     "DerivativeCFD: Collateral amount does not equal msg.value"
-        //   );
-        // });
+        it("calculates collateralAmountTaker correctly", async () => {
+          await expect(
+            wemixKLAYMarketTaker.takeDeal(
+              dealIdKLAY,
+              takerPrice,
+              takerSlippage,
+              {
+                value: correctCollateralTaker,
+              }
+            )
+          ).to.not.be.revertedWith(
+            "DerivativeCFD: Collateral amount does not equal msg.value"
+          );
+        });
 
-        // it("reverts when passing incorrect collateral amount", async () => {
-        //   const incorrectCollateralMaker = ethers.utils.parseEther("8.2590");
-        //   await expect(
-        //     wtiMarketMaker.callStatic.createDeal(dealParams, {
-        //       value: incorrectCollateralMaker,
-        //     })
-        //   ).to.be.revertedWith(
-        //     "DerivativeCFD: Collateral amount does not equal msg.value"
-        //   );
-        // });
+        it("reverts when passing incorrect collateral amount", async () => {
+          const incorrectCollateralTaker = ethers.utils.parseEther("8.2590");
+          await expect(
+            wemixKLAYMarketTaker.takeDeal(
+              dealIdKLAY,
+              takerPrice,
+              takerSlippage,
+              {
+                value: incorrectCollateralTaker,
+              }
+            )
+          ).to.be.revertedWith(
+            "DerivativeCFD: Collateral amount does not equal msg.value"
+          );
+        });
       });
 
       describe("Processing", async () => {
         beforeEach(async () => {
-          wtiMarketMaker = wtiMarket.connect(maker);
+          wemixTUSDMarketMaker = wemixTUSDMarket.connect(maker);
           testUSDCMaker = testUSDC.connect(maker);
-          wtiMarketTaker = wtiMarket.connect(taker);
+          wemixTUSDMarketTaker = wemixTUSDMarket.connect(taker);
           testUSDCTaker = testUSDC.connect(taker);
 
           const correctCollateralMaker = ethers.utils.parseEther("8.20590");
@@ -482,7 +499,7 @@ let dealIdETH: BigNumberish;
           );
           await approveTakerTx.wait(1);
 
-          const dealTx = await wtiMarketMaker.createDeal(dealParams);
+          const dealTx = await wemixTUSDMarketMaker.createDeal(dealParams);
           const dealTxReceipt = await dealTx.wait(1);
 
           dealId = dealTxReceipt!.events![3].args!.dealId;
@@ -490,13 +507,13 @@ let dealIdETH: BigNumberish;
 
         it("cancels expired deal and sets status to expired", async () => {
           // simulating getting blockchain time on expiration date
-          let dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           const expiration = dealParams.periodOrderExpiration.toNumber();
           await network.provider.send("evm_increaseTime", [expiration + 1]);
           await network.provider.request({ method: "evm_mine", params: [] });
-          await wtiMarketMaker.processing(dealId);
+          await wemixTUSDMarketMaker.processing(dealId);
 
-          dealParams = await wtiMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
           assert.equal(dealStatus, 4);
         });
@@ -504,33 +521,33 @@ let dealIdETH: BigNumberish;
         it("test for untaken unexpired deal", async () => {
           // simulating getting blockchain time on expiration date
           console.log("test for untaken unexpired deal");
-          let dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
 
-          // await wtiMarketMaker.processing(dealId);
+          // await wemixTUSDMarketMaker.processing(dealId);
 
-          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
+          await expect(wemixTUSDMarketMaker.processing(dealId)).to.be.reverted;
 
-          dealParams = await wtiMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
 
         it("test for taken unexpired deal", async () => {
           // simulating getting blockchain time on expiration date
-          let dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
 
-          const takeDealTx = await wtiMarketTaker.takeDeal(
+          const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
             takerPrice,
             takerSlippage
           );
           await takeDealTx.wait();
 
-          // await wtiMarketMaker.processing(dealId);
+          // await wemixTUSDMarketMaker.processing(dealId);
 
-          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
+          await expect(wemixTUSDMarketMaker.processing(dealId)).to.be.reverted;
 
-          dealParams = await wtiMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
@@ -538,9 +555,9 @@ let dealIdETH: BigNumberish;
         it("test for taken expired deal", async () => {
           // simulating getting blockchain time on expiration date
           console.log("test for taken expired deal");
-          let dealParams = await wtiMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
 
-          const takeDealTx = await wtiMarketTaker.takeDeal(
+          const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
             takerPrice,
             takerSlippage
@@ -551,9 +568,9 @@ let dealIdETH: BigNumberish;
           await network.provider.send("evm_increaseTime", [expiration + 1]);
           await network.provider.request({ method: "evm_mine", params: [] });
 
-          await wtiMarketMaker.processing(dealId);
+          await wemixTUSDMarketMaker.processing(dealId);
 
-          dealParams = await wtiMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
