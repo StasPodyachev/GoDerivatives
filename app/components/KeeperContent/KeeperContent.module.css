@@ -1,0 +1,162 @@
+.switchBtn {
+ margin-top: 14px;
+ margin-bottom: 60px;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ position: relative;
+}
+
+.switchItem {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 8px 0;
+ width: 50%;
+ font-style: normal;
+ font-weight: 700;
+ font-size: 14px;
+ line-height: 24px;
+ color: #FFFFFF;
+ background: #1C1924;
+ border-radius: 100px;
+ z-index: 0;
+}
+
+.activeSwitch {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 8px 0;
+ width: 58%;
+ font-style: normal;
+ font-weight: 700;
+ font-size: 14px;
+ line-height: 24px;
+ color: #FFFFFF;
+ background: linear-gradient(74.31deg, #59FFAF 0%, #9E4EFF 80.73%);
+ border-radius: 100px;
+ border-radius: 100px;
+ z-index: 1;
+}
+
+.switchItem span {
+ background: linear-gradient(73.6deg, #85FFC4 2.11%, #5CC6FF 42.39%, #BC85FF 85.72%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ background-clip: text;
+ font-style: normal;
+ font-weight: 700;
+ font-size: 14px;
+ line-height: 24px;
+}
+
+.switchBtn div:last-child {
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ right: 0;
+ height: 40px;
+}
+
+.switchBtn div:first-child {
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ left: 0;
+ height: 40px;
+}
+
+.input {
+ border-radius: 8px;
+ background: #1C1924;
+ padding: 16px;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+}
+
+.input input {
+  background-color: inherit;
+  border: none;
+  color: #A6A0BB;
+  max-width: 200px;
+}
+
+.input span {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  color: #A6A0BB;
+}
+
+.label {
+ font-weight: 400;
+ font-size: 12px;
+ line-height: 16px;
+ color: #C091F2;
+ margin: 16px 0 8px;
+}
+
+.block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  background-color: #1C1924;
+  margin: 16px 0;
+  padding: 16px;
+  color: #A6A0BB;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.btn > div {
+  width: 100%;
+}
+
+.item {
+  padding: 16px;
+  background-color: #17161C;
+  margin: 16px 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.icons > div:first-child {
+  margin-right: -6px;
+  z-index: 2;
+}
+
+.name {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.tvl {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: #A6A0BB;
+  margin-left: auto;
+}
+
+.tvl span {
+  color: #6CDA9C;
+  font-weight: 700;
+}
