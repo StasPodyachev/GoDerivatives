@@ -24,7 +24,6 @@ type Deal @entity {
   dateOrderCreation: BigInt!
   dateStart: BigInt!
   dateStop: BigInt!
-  oracleAmount: BigInt!
   oracleRoundIDStart: BigInt!
   buyerTokenId: BigInt!
   sellerTokenId: BigInt!

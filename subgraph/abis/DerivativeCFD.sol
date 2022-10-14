@@ -60,11 +60,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             1e36 +
             slippageAmount;
 
-        if(coin == address(0))
-            require(
-                msg.value == collateralAmountMaker,
+        require(
+            msg.value > 0 ? collateralAmountMaker == msg.value : true,
             "DerivativeCFD: Collateral amount does not equal msg.value"
-            );
+        );
 
         msg.value > 0
             ? deposit.deposit{value: msg.value}(msg.sender)
@@ -122,8 +121,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Deal is not created"
         );
 
-     
-
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
         );
@@ -140,12 +137,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deal.percent) /
             1e36 +
             slippageTakerAmount;
-
-        if(coin == address(0))
-            require(
-                msg.value == collateralAmountTaker,
-                "DerivativeCFD:  Collateral amount does not equal msg.value"
-            );
 
         require(
             collateralAmount <= collateralAmountTaker,
@@ -238,6 +229,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
             return;
         }
+
+        console.log(uint(deal.status));
+        console.log(deal.dateStop);
+        console.log(block.timestamp);
 
         require(
             deal.status == DealStatus.ACCEPTED &&
@@ -332,7 +327,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             }
 
             for(uint i=0; i<nftHolders.length; i++){
-                balanceNft = nft.balanceOf(nftHolders[i], deal.sellerTokenId);
+                balanceNft = nft.balanceOf(nftHolders[i], deal.buyerTokenId);
 
                 if(balanceNft==0) continue;
 

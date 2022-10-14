@@ -18,7 +18,7 @@ const contracts = [
   {
     contractName: deployNames.DEAL_NFT,
     args: ["https://cfd-app.vercel.app/nft/{id}"],
-    ignore: true,
+    ignore: false,
   },
   {
     contractName: deployNames.ORACLE,

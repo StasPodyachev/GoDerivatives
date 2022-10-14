@@ -31,7 +31,6 @@ export function handleDealCreated(event: DealAccepted): void {
   entity.dateOrderCreation = deal.dateOrderCreation;
   entity.dateStart = deal.dateStart;
   entity.dateStop = deal.dateStop;
-  entity.oracleAmount = deal.oracleAmount;
   entity.oracleRoundIDStart = deal.oracleRoundIDStart;
   entity.buyerTokenId = deal.buyerTokenId;
   entity.sellerTokenId = deal.sellerTokenId;
@@ -81,7 +80,6 @@ export function handleDealAccepted(event: DealAccepted): void {
   entity.oracleRoundIDStart = deal.oracleRoundIDStart;
   entity.buyerTokenId = deal.buyerTokenId;
   entity.sellerTokenId = deal.sellerTokenId;
-  entity.oracleAmount = deal.oracleAmount;
   entity.status = BigInt.fromI32(deal.status);
   entity.save();
 }
