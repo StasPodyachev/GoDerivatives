@@ -507,13 +507,13 @@ let dealIdKLAY: BigNumberish;
 
         it("cancels expired deal and sets status to expired", async () => {
           // simulating getting blockchain time on expiration date
-          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarket.getDeal(dealId);
           const expiration = dealParams.periodOrderExpiration.toNumber();
           await network.provider.send("evm_increaseTime", [expiration + 1]);
           await network.provider.request({ method: "evm_mine", params: [] });
-          await wemixTUSDMarketMaker.processing(dealId);
+          await wemixTUSDMarket.processing(dealId);
 
-          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarket.getDeal(dealId);
           let dealStatus = dealParams.status;
           assert.equal(dealStatus, 4);
         });
@@ -521,20 +521,20 @@ let dealIdKLAY: BigNumberish;
         it("test for untaken unexpired deal", async () => {
           // simulating getting blockchain time on expiration date
           console.log("test for untaken unexpired deal");
-          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarket.getDeal(dealId);
 
-          // await wemixTUSDMarketMaker.processing(dealId);
+          // await wemixTUSDMarket.processing(dealId);
 
-          await expect(wemixTUSDMarketMaker.processing(dealId)).to.be.reverted;
+          await expect(wemixTUSDMarket.processing(dealId)).to.be.reverted;
 
-          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarket.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
 
         it("test for taken unexpired deal", async () => {
           // simulating getting blockchain time on expiration date
-          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarket.getDeal(dealId);
 
           const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
@@ -543,11 +543,11 @@ let dealIdKLAY: BigNumberish;
           );
           await takeDealTx.wait();
 
-          // await wemixTUSDMarketMaker.processing(dealId);
+          // await wemixTUSDMarket.processing(dealId);
 
-          await expect(wemixTUSDMarketMaker.processing(dealId)).to.be.reverted;
+          await expect(wemixTUSDMarket.processing(dealId)).to.be.reverted;
 
-          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarket.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
@@ -555,7 +555,7 @@ let dealIdKLAY: BigNumberish;
         it("test for taken expired deal", async () => {
           // simulating getting blockchain time on expiration date
           console.log("test for taken expired deal");
-          let dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          let dealParams = await wemixTUSDMarket.getDeal(dealId);
 
           const takeDealTx = await wemixTUSDMarketTaker.takeDeal(
             dealId,
@@ -568,9 +568,79 @@ let dealIdKLAY: BigNumberish;
           await network.provider.send("evm_increaseTime", [expiration + 1]);
           await network.provider.request({ method: "evm_mine", params: [] });
 
-          await wemixTUSDMarketMaker.processing(dealId);
+          await wemixTUSDMarket.processing(dealId);
 
-          dealParams = await wemixTUSDMarketMaker.getDeal(dealId);
+          dealParams = await wemixTUSDMarket.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
+        });
+
+        it("cancels expired deal for KLAY and sets status to expired", async () => {
+          // simulating getting blockchain time on expiration date
+          let dealParams = await wemixKLAYMarket.getDeal(dealId);
+          const expiration = dealParams.periodOrderExpiration.toNumber();
+          await network.provider.send("evm_increaseTime", [expiration + 1]);
+          await network.provider.request({ method: "evm_mine", params: [] });
+          await wemixKLAYMarketMaker.processing(dealId);
+
+          dealParams = await wemixKLAYMarket.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          assert.equal(dealStatus, 4);
+        });
+
+        it("test for untaken unexpired deal for KLAY", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("test for untaken unexpired deal");
+          let dealParams = await wemixKLAYMarket.getDeal(dealId);
+
+          // await wemixKLAYMarketMaker.processing(dealId);
+
+          await expect(wemixKLAYMarketMaker.processing(dealId)).to.be.reverted;
+
+          dealParams = await wemixKLAYMarket.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
+        });
+
+        it("test for taken unexpired deal", async () => {
+          // simulating getting blockchain time on expiration date
+          let dealParams = await wemixKLAYMarket.getDeal(dealId);
+
+          const takeDealTx = await wemixKLAYMarketTaker.takeDeal(
+            dealId,
+            takerPrice,
+            takerSlippage
+          );
+          await takeDealTx.wait();
+
+          // await wemixKLAYMarketMaker.processing(dealId);
+
+          await expect(wemixKLAYMarketMaker.processing(dealId)).to.be.reverted;
+
+          dealParams = await wemixKLAYMarket.getDeal(dealId);
+          let dealStatus = dealParams.status;
+          console.log(`Deal status: ${dealStatus}`);
+        });
+
+        it("test for taken expired deal", async () => {
+          // simulating getting blockchain time on expiration date
+          console.log("test for taken expired deal");
+          let dealParams = await wemixKLAYMarket.getDeal(dealId);
+
+          const takeDealTx = await wemixKLAYMarketTaker.takeDeal(
+            dealId,
+            takerPrice,
+            takerSlippage
+          );
+          await takeDealTx.wait();
+
+          const expiration = dealParams.periodOrderExpiration.toNumber();
+          await network.provider.send("evm_increaseTime", [expiration + 1]);
+          await network.provider.request({ method: "evm_mine", params: [] });
+
+          await wemixKLAYMarketMaker.processing(dealId);
+
+          dealParams = await wemixKLAYMarket.getDeal(dealId);
           let dealStatus = dealParams.status;
           console.log(`Deal status: ${dealStatus}`);
         });
