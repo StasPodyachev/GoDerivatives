@@ -14,8 +14,7 @@ interface IDeposit {
     function refund(
         address recipient,
         address coin,
-        uint256 val,
-        uint256 fee
+        uint256 val
     ) external;
 
     function collectOperatorFee(

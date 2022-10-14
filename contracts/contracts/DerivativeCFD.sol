@@ -60,10 +60,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             1e36 +
             slippageAmount;
 
-        if(coin == address(0))
+        if (coin == address(0))
             require(
                 msg.value == collateralAmountMaker,
-            "DerivativeCFD: Collateral amount does not equal msg.value"
+                "DerivativeCFD: Collateral amount does not equal msg.value"
             );
 
         msg.value > 0
@@ -93,18 +93,25 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             sellerTokenId: 0,
             status: DealStatus.CREATED
         });
-        
-        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg.sender;
-        
-        uint256 dealId = storage_.addDealId();
-        
-        deals[dealId] = deal;
 
+        params.makerPosition ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
+
+        uint256 dealId = storage_.addDealId();
+
+        deals[dealId] = deal;
 
         emit DealCreated(dealId);
 
         if (address(amm) != address(0)) {
-            amm.takeDeal(address(this), dealId, params.rate, params.slippage, collateralAmountMaker, coin);
+            amm.takeDeal(
+                address(this),
+                dealId,
+                params.rate,
+                params.slippage,
+                collateralAmountMaker,
+                coin
+            );
         }
     }
 
@@ -115,14 +122,15 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
     ) external payable isFreezed {
         Deal storage deal = deals[dealId];
 
-        require(deal.maker != msg.sender, "DerivativeCFD: Taker shouldn't be maker");
+        require(
+            deal.maker != msg.sender,
+            "DerivativeCFD: Taker shouldn't be maker"
+        );
         require(deal.collateralAmountMaker != 0, "DerivativeCFD: Wrong dealID");
         require(
             deal.status == DealStatus.CREATED,
             "DerivativeCFD: Deal is not created"
         );
-
-     
 
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
@@ -131,9 +139,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         uint256 collateralAmount = (deal.count * rateOracle * deal.percent) /
             1e36;
 
-        uint256 slippageTakerAmount =
-            (deal.count * rateTaker * deal.percent * slippageTaker) /
-            1e54;
+        uint256 slippageTakerAmount = (deal.count *
+            rateTaker *
+            deal.percent *
+            slippageTaker) / 1e54;
 
         uint256 collateralAmountTaker = (deal.count *
             rateTaker *
@@ -141,7 +150,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             1e36 +
             slippageTakerAmount;
 
-        if(coin == address(0))
+        if (coin == address(0))
             require(
                 msg.value == collateralAmountTaker,
                 "DerivativeCFD:  Collateral amount does not equal msg.value"
@@ -153,24 +162,34 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         );
 
         require(
-            (rateOracle  > (deal.rateMaker - deal.rateMaker * deal.slippageMaker / 1e18)) &&
-            (rateOracle <= (deal.rateMaker + deal.rateMaker * deal.slippageMaker / 1e18)) &&
-            (rateOracle  > (rateTaker - rateTaker * slippageTaker / 1e18)) &&
-            (rateOracle <= (rateTaker + rateTaker * slippageTaker / 1e18)),
+            (rateOracle >
+                (deal.rateMaker -
+                    (deal.rateMaker * deal.slippageMaker) /
+                    1e18)) &&
+                (rateOracle <=
+                    (deal.rateMaker +
+                        (deal.rateMaker * deal.slippageMaker) /
+                        1e18)) &&
+                (rateOracle >
+                    (rateTaker - (rateTaker * slippageTaker) / 1e18)) &&
+                (rateOracle <=
+                    (rateTaker + (rateTaker * slippageTaker) / 1e18)),
             "DerivativeCFD: Deposit Out of range"
         );
 
-        msg.value > 0
-            ? deposit.deposit{value: msg.value}(msg.sender)
-            : deposit.deposit(coin, collateralAmount, msg.sender);
+        if (msg.value > 0) {
+            deposit.deposit{value: collateralAmount}(msg.sender);
+            deposit.refund(msg.sender, coin, msg.value - collateralAmount);
+        } else {
+            deposit.deposit(coin, collateralAmount, msg.sender);
+        }
 
         deposit.refund(
             deal.maker,
             coin,
-            deal.collateralAmountMaker - collateralAmount,
-            0
+            deal.collateralAmountMaker - collateralAmount
         );
-        
+
         deal.slippageTaker = slippageTaker;
         deal.oracleRoundIDStart = roundId;
         deal.collateralAmountBuyer = collateralAmount;
@@ -180,8 +199,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         deal.dateStop = deal.dateStart + duration;
         deal.status = DealStatus.ACCEPTED;
 
-
-        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg.sender;
+        deal.buyer == address(0) ? deal.buyer = msg.sender : deal.seller = msg
+            .sender;
 
         DealNFT.MintParams memory mintParams = DealNFT.MintParams({
             dealId: dealId,
@@ -192,7 +211,6 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             buyer: deal.buyer,
             seller: deal.seller
         });
-
 
         deal.buyerTokenId = nft.mint(mintParams);
         mintParams.recipient = deal.seller;
@@ -219,7 +237,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Deal status is not created"
         );
 
-        deposit.refund(deal.maker, coin, deal.collateralAmountMaker, 0);
+        deposit.refund(deal.maker, coin, deal.collateralAmountMaker);
 
         deal.status = status;
     }
@@ -241,7 +259,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         require(
             deal.status == DealStatus.ACCEPTED &&
-                deal.dateStop <= block.timestamp, "DerivativeCFD: deal.dateStop <= block.timestamp"
+                deal.dateStop <= block.timestamp,
+            "DerivativeCFD: deal.dateStop <= block.timestamp"
         );
 
         uint256 oracleAmount = oracle.getAmount(
@@ -279,10 +298,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
         uint256 operatorFee;
         uint256 serviceFee;
-        (address[] memory nftHolders) = nft.getHolders(deal.buyerTokenId);
+        address[] memory nftHolders = nft.getHolders(deal.buyerTokenId);
 
-        uint balanceNft;
-        uint ONE = nft.ONE();
+        uint256 balanceNft;
+        uint256 ONE = nft.ONE();
 
         if (payoutBuyer > 0) {
             if (payoutBuyer > deal.collateralAmountBuyer) {
@@ -298,18 +317,18 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 payoutBuyer -= operatorFee;
                 payoutBuyer -= serviceFee;
             }
-            
-            for(uint i=0; i<nftHolders.length; i++){
+
+            for (uint256 i = 0; i < nftHolders.length; i++) {
                 balanceNft = nft.balanceOf(nftHolders[i], deal.buyerTokenId);
 
-                if(balanceNft==0) continue;
+                if (balanceNft == 0) continue;
 
-                deposit.refund(
-                    nftHolders[i],
-                    coin,
-                    payoutBuyer * balanceNft / ONE,
-                    operatorFee + serviceFee
-                );
+                // deposit.refund(
+                //     nftHolders[i],
+                //     coin,
+                //     (payoutBuyer * balanceNft) / ONE,
+                //     operatorFee + serviceFee
+                // );
             }
         }
 
@@ -331,17 +350,17 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
                 payoutSeller -= serviceFee;
             }
 
-            for(uint i=0; i<nftHolders.length; i++){
+            for (uint256 i = 0; i < nftHolders.length; i++) {
                 balanceNft = nft.balanceOf(nftHolders[i], deal.sellerTokenId);
 
-                if(balanceNft==0) continue;
+                if (balanceNft == 0) continue;
 
-                deposit.refund(
-                    nftHolders[i],
-                    coin,
-                    payoutSeller * balanceNft / ONE,
-                    operatorFee + serviceFee
-                );
+                // deposit.refund(
+                //     nftHolders[i],
+                //     coin,
+                //     (payoutSeller * balanceNft) / ONE,
+                //     operatorFee + serviceFee
+                // );
             }
         }
 
