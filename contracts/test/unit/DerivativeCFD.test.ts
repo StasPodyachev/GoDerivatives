@@ -39,14 +39,14 @@ let testUSDCTaker: SimpleToken;
 
 const dealParams = {
   makerPosition: true,
-  rate: ethers.utils.parseEther("1.58"),
+  rate: ethers.utils.parseEther("1.6250"),
   count: ethers.utils.parseEther("1"),
   percent: ethers.utils.parseEther("0.1"),
   expiration: 86400, // 1 day
   slippage: ethers.utils.parseEther("0.02"),
 };
 
-const correctCollateral = ethers.utils.parseEther("0.16116");
+const correctCollateral = ethers.utils.parseEther("0.16575");
 
 let dealId: BigNumberish;
 
@@ -212,7 +212,7 @@ let dealId: BigNumberish;
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
               dealId,
-              ethers.utils.parseEther("1.5710"),
+              ethers.utils.parseEther("1.6310"),
               ethers.utils.parseEther("0.02")
             )
           ).to.be.revertedWith("DerivativeCFD: Deal is not created");
@@ -293,7 +293,7 @@ let dealId: BigNumberish;
           await expect(
             wtiMarketTaker.callStatic.takeDeal(
               dealId,
-              ethers.utils.parseEther("1.5710"),
+              ethers.utils.parseEther("1.6310"),
               ethers.utils.parseEther("0.02")
             )
           ).not.to.be.revertedWith("DerivativeCFD: Deposit Out of range");
@@ -306,7 +306,7 @@ let dealId: BigNumberish;
           const makerBalanceBefore = await testUSDC.balanceOf(maker.address);
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("1.6310"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
@@ -326,7 +326,7 @@ let dealId: BigNumberish;
         it("mints NFT and assigns ownership to buyer and seller correctly", async () => {
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("1.6310"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
@@ -392,7 +392,9 @@ let dealId: BigNumberish;
           console.log("test for untaken unexpired deal");
           let dealParams = await wtiMarketMaker.getDeal(dealId);
 
-          await wtiMarketMaker.processing(dealId);
+          // await wtiMarketMaker.processing(dealId);
+
+          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
 
           dealParams = await wtiMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
@@ -405,12 +407,14 @@ let dealId: BigNumberish;
 
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("1.6310"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
 
-          await wtiMarketMaker.processing(dealId);
+          // await wtiMarketMaker.processing(dealId);
+
+          await expect(wtiMarketMaker.processing(dealId)).to.be.reverted;
 
           dealParams = await wtiMarketMaker.getDeal(dealId);
           let dealStatus = dealParams.status;
@@ -424,7 +428,7 @@ let dealId: BigNumberish;
 
           const takeDealTx = await wtiMarketTaker.takeDeal(
             dealId,
-            ethers.utils.parseEther("1.5710"),
+            ethers.utils.parseEther("1.6310"),
             ethers.utils.parseEther("0.02")
           );
           await takeDealTx.wait();
