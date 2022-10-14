@@ -295,11 +295,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
                 if(balanceNft==0) continue;
 
-                deposit.refund(
+                deposit.withdraw((
                     nftHolders[i],
                     coin,
-                    payoutBuyer * balanceNft / ONE,
-                    operatorFee + serviceFee
+                    payoutBuyer * balanceNft / ONE
+                    // operatorFee + serviceFee
                 );
             }
         }
@@ -327,11 +327,10 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
 
                 if(balanceNft==0) continue;
 
-                deposit.refund(
+                deposit.withdraw(
                     nftHolders[i],
                     coin,
-                    payoutSeller * balanceNft / ONE,
-                    operatorFee + serviceFee
+                    payoutSeller * balanceNft / ONE
                 );
             }
         }

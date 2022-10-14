@@ -71,6 +71,15 @@ contract Deposit is IDeposit, Ownable {
 
         balances[recipient][coin] -= val + fee;
     }
+// 100
+// 100
+
+    function withdraw(address recipient, address coin, uint val) external onlyMarket{
+        coin == address(0)
+            ? payable(recipient).transfer(val)
+            : TransferHelper.safeTransfer(coin, recipient, val);
+    }
+
 
     function collectOperatorFee(
         address operator,

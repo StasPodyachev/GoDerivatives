@@ -24,6 +24,8 @@ interface IDeposit {
         uint256 val
     ) external;
 
+    function withdraw(address recipient, address coin, uint val) external;
+
     function withdrawOperatorFee(address operator, address coin) external;
 
     function collectServiceFee(address coin, uint256 val) external;
