@@ -144,7 +144,7 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
         if(coin == address(0))
             require(
                 msg.value == collateralAmountTaker,
-                "DerivativeCFD: msg.value cannot be 0"
+                "DerivativeCFD:  Collateral amount does not equal msg.value"
             );
 
         require(
