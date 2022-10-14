@@ -88,9 +88,7 @@ in progress
 
 ## Community.
 
-Join our community at [Twitter](https://twitter.com/StanislavPodya3)
-
-Join our community at [Facebook](https://www.facebook.com/profile.php?id=100086849285426)
+Join our community at [Twitter](https://twitter.com/StanislavPodya3) and [Facebook](https://www.facebook.com/profile.php?id=100086849285426)
 
 ## Licensing
 
