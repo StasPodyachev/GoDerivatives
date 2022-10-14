@@ -60,10 +60,11 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             1e36 +
             slippageAmount;
 
-        require(
-            msg.value > 0 ? collateralAmountMaker == msg.value : true,
+        if(coin == address(0))
+            require(
+                msg.value == collateralAmountMaker,
             "DerivativeCFD: Collateral amount does not equal msg.value"
-        );
+            );
 
         msg.value > 0
             ? deposit.deposit{value: msg.value}(msg.sender)
@@ -121,6 +122,8 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             "DerivativeCFD: Deal is not created"
         );
 
+     
+
         (uint256 rateOracle, uint256 roundId) = oracle.getLatest(
             oracleAggregatorAddress
         );
@@ -137,6 +140,12 @@ abstract contract DerivativeCFD is IDerivativeCFD, Ownable {
             deal.percent) /
             1e36 +
             slippageTakerAmount;
+
+        if(coin == address(0))
+            require(
+                msg.value == collateralAmountTaker,
+                "DerivativeCFD: msg.value cannot be 0"
+            );
 
         require(
             collateralAmount <= collateralAmountTaker,
