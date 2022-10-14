@@ -57,8 +57,7 @@ contract Deposit is IDeposit, Ownable {
     function refund(
         address recipient,
         address coin,
-        uint256 val,
-        uint256 fee
+        uint256 val
     ) external onlyMarket {
         require(
             balances[recipient][coin] >= val,
@@ -69,17 +68,14 @@ contract Deposit is IDeposit, Ownable {
             ? payable(recipient).transfer(val)
             : TransferHelper.safeTransfer(coin, recipient, val);
 
-        balances[recipient][coin] -= val + fee;
+        balances[recipient][coin] -= val;
     }
-// 100
-// 100
 
     function withdraw(address recipient, address coin, uint val) external onlyMarket{
         coin == address(0)
             ? payable(recipient).transfer(val)
             : TransferHelper.safeTransfer(coin, recipient, val);
     }
-
 
     function collectOperatorFee(
         address operator,
