@@ -16,11 +16,11 @@ We consider Hackathon as a laboratory where we can work on the future problems a
 
 #### Whitepaper: in progress
 
-For more comprehensive information about GoDerivatives you can read our whitepaper and project description on our [Notion Documentation](https://www.notion.so/GoDerivatives-Klaytn-Hackathon-0cd736e825d14df3ab060a3742ed21c1).
+For more comprehensive information about GoDerivatives you can read our whitepaper and project description on our [Notion Documentation](https://husky-breath-587.notion.site/GoDerivatives-Klaytn-Hackathon-0cd736e825d14df3ab060a3742ed21c1).
 
 #### Technical Documentation
 
-Check our full Documentation [here](https://www.notion.so/GoDerivatives-Klaytn-Hackathon-0cd736e825d14df3ab060a3742ed21c1) for more technical details.
+Check our full Documentation [here](https://husky-breath-587.notion.site/GoDerivatives-Klaytn-Hackathon-0cd736e825d14df3ab060a3742ed21c1) for more technical details.
 
 ## Smart contracts
 
