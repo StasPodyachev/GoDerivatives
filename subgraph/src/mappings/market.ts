@@ -35,6 +35,7 @@ export function handleDealCreated(event: DealAccepted): void {
   entity.buyerTokenId = deal.buyerTokenId;
   entity.sellerTokenId = deal.sellerTokenId;
   entity.status = BigInt.fromI32(deal.status);
+  entity.market = event.address.toHex();
 
   entity.save();
 }

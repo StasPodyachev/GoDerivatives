@@ -28,6 +28,7 @@ type Deal @entity {
   buyerTokenId: BigInt!
   sellerTokenId: BigInt!
   status: BigInt!
+  market: Market!
 }
 
 type Market @entity {
